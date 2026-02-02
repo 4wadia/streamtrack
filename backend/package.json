@@ -1,0 +1,25 @@
+{
+    "name": "streamtrack-backend",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "bun --watch src/index.ts",
+        "build": "bun build src/index.ts --outdir dist --target bun",
+        "start": "bun run dist/index.js",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint src --ext .ts",
+        "test": "bun test"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.21.2",
+        "mongoose": "^8.9.5"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.17",
+        "@types/express": "^5.0.0",
+        "@types/node": "^22.10.7",
+        "typescript": "^5.7.3"
+    }
+}
