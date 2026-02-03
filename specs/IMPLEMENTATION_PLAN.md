@@ -14,6 +14,15 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 - [x] Initialize Express backend with TypeScript on Bun
 - [x] Configure MongoDB connection with Mongoose
 - [x] Create environment variable templates (.env.example)
+- [x] Set up Firebase project and credentials (Phase 1)
+- [x] Firebase Auth on frontend (AuthService with signals)
+- [x] Login/register components with dark theme styling
+- [x] Firebase Admin SDK on backend
+- [x] Auth middleware for token verification
+- [x] Auth routes (/api/auth/register, /login, /me)
+- [x] Angular auth guards (authGuard, guestGuard)
+- [x] User Mongoose schema with watchlist support
+- [x] Home component with hero section and vibe preview
 
 ---
 
@@ -22,19 +31,6 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 ---
 
 ## Backlog (Priority Order)
-
-### Phase 1: Foundation & Setup
-- [ ] Set up Firebase project and download credentials
-
-### Phase 2: Authentication
-- [ ] Implement Firebase Auth on frontend (AuthService)
-- [ ] Create login/register components
-- [ ] Add Firebase Admin SDK to backend
-- [ ] Create verifyFirebaseToken middleware
-- [ ] Implement /api/auth/register endpoint
-- [ ] Implement /api/auth/login endpoint
-- [ ] Create Angular auth guards for protected routes
-- [ ] Store user document in MongoDB on first login
 
 ### Phase 3: User Services
 - [ ] Create User Mongoose schema with services array

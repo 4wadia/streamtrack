@@ -1,10 +1,15 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import { initializeFirebase } from './services/firebase.service';
+import authRoutes from './routes/auth.routes';
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/streamtrack';
+
+// Initialize Firebase Admin
+initializeFirebase();
 
 // Middleware
 app.use(cors());
@@ -19,7 +24,9 @@ app.get('/health', (_req, res) => {
     });
 });
 
-// API routes placeholder
+// API routes
+app.use('/api/auth', authRoutes);
+
 app.get('/api', (_req, res) => {
     res.json({ message: 'StreamTrack API v0.0.0' });
 });
@@ -47,3 +54,4 @@ async function start() {
 start();
 
 export default app;
+
