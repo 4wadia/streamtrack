@@ -6,11 +6,11 @@ export const environment = {
     production: true,
     apiUrl: '/api',
     firebase: {
-        apiKey: '',           // Get from Firebase Console
-        authDomain: '',       // your-project.firebaseapp.com
-        projectId: '',        // your-project-id
-        storageBucket: '',    // your-project.appspot.com
-        messagingSenderId: '', // sender ID
-        appId: ''             // app ID
+        apiKey: "AIzaSyB3oMKGpZuHe_T1sEDm6jcjVTeEIxN3ZVc",
+        authDomain: "streamtrack-ecd53.firebaseapp.com",
+        projectId: "streamtrack-ecd53",
+        storageBucket: "streamtrack-ecd53.firebasestorage.app",
+        messagingSenderId: "452706281531",
+        appId: "1:452706281531:web:ed0160b9cf312b374e941e"
     }
 };
