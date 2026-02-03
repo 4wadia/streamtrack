@@ -63,7 +63,11 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 - [ ] Implement GET /api/watchlist with status filter
 - [ ] Implement PUT /api/watchlist/:contentId
 - [ ] Implement DELETE /api/watchlist/:contentId
-- [ ] Create WatchlistCard component
+- [/] Add watchlist array to User schema
+- [x] Implement POST /api/watchlist
+- [x] Implement GET /api/watchlist with status filter
+- [x] Implement PUT /api/watchlist/:contentId
+- [x] Implement DELETE /api/watchlist/:contentId
 - [ ] Create WatchlistTabs component
 - [ ] Build Watchlist page with all CRUD
 - [ ] Implement GET /api/watchlist/stats

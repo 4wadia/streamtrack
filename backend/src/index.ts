@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import contentRoutes from './routes/content.routes';
 import discoverRoutes from './routes/discover.routes';
+import watchlistRoutes from './routes/watchlist.routes';
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/discover', discoverRoutes);
+app.use('/api/watchlist', watchlistRoutes);
 
 app.get('/api', (_req, res) => {
     res.json({ message: 'StreamTrack API v0.0.0' });

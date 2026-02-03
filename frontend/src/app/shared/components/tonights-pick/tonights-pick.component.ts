@@ -1,4 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
+import { WatchlistService } from '../../../core/services/watchlist.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -194,13 +195,25 @@ export class TonightsPickComponent {
     @Input() reason: string = '';
     @Input() loading: boolean = false;
 
+    private watchlistService = inject(WatchlistService);
+
     getBackdropUrl(): string {
         return this.pick?.backdropPath ? `url(${this.pick.backdropPath})` : 'none';
     }
 
     onAddToWatchlist(event: Event) {
         event.stopPropagation();
-        // TODO: Implement add to watchlist
-        console.log('Add to watchlist:', this.pick?.tmdbId);
+        if (!this.pick) return;
+
+        this.watchlistService.addToWatchlist({
+            contentId: this.pick.id,
+            title: this.pick.title,
+            type: this.pick.type,
+            posterPath: this.pick.posterPath || undefined,
+            status: 'want' // Default to 'Plan to Watch'
+        }).subscribe({
+            next: () => alert('Added to watchlist!'), // Simple feedback for now, toast would be better
+            error: (err) => console.error('Failed to add to watchlist', err)
+        });
     }
 }

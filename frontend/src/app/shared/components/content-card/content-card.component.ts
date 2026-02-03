@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { WatchlistService } from '../../../core/services/watchlist.service';
 
 export interface ContentItem {
     id: string;
@@ -43,6 +44,13 @@ export interface ContentItem {
                         <span class="star">★</span>
                         {{ content.rating.toFixed(1) }}
                     </div>
+                    <button 
+                        class="add-btn" 
+                        (click)="onAddToWatchlist($event)"
+                        title="Add to Watchlist"
+                    >
+                        +
+                    </button>
                 </div>
             </div>
             <div class="card-info">
@@ -147,13 +155,51 @@ export interface ContentItem {
         .type-badge {
             font-size: 0.875rem;
         }
+
+        .add-btn {
+            margin-left: auto;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            color: white;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .add-btn:hover {
+            background: var(--accent-primary);
+            transform: scale(1.1);
+        }
     `]
 })
 export class ContentCardComponent {
     @Input({ required: true }) content!: ContentItem;
 
+    private watchlistService = inject(WatchlistService);
+
     getYear(): string {
         if (!this.content.releaseDate) return '';
         return new Date(this.content.releaseDate).getFullYear().toString();
+    }
+
+    onAddToWatchlist(event: Event) {
+        event.stopPropagation();
+        this.watchlistService.addToWatchlist({
+            contentId: this.content.id,
+            title: this.content.title,
+            type: this.content.type,
+            posterPath: this.content.posterPath || undefined,
+            status: 'want'
+        }).subscribe({
+            next: () => { }, // TODO: Show visual feedback checkmark
+            error: (err) => console.error('Failed to add to watchlist', err)
+        });
     }
 }
