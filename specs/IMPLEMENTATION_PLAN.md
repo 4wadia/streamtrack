@@ -57,21 +57,16 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 - [x] Implement "Tonight's Pick" algorithm
 - [x] Create TonightsPick hero component
 
-### Phase 6: Watchlist
-- [ ] Add watchlist array to User schema
-- [ ] Implement POST /api/watchlist
-- [ ] Implement GET /api/watchlist with status filter
-- [ ] Implement PUT /api/watchlist/:contentId
-- [ ] Implement DELETE /api/watchlist/:contentId
-- [/] Add watchlist array to User schema
+### Phase 6: Watchlist ✓
+- [x] Add watchlist array to User schema
 - [x] Implement POST /api/watchlist
 - [x] Implement GET /api/watchlist with status filter
 - [x] Implement PUT /api/watchlist/:contentId
 - [x] Implement DELETE /api/watchlist/:contentId
-- [ ] Create WatchlistTabs component
-- [ ] Build Watchlist page with all CRUD
-- [ ] Implement GET /api/watchlist/stats
-- [ ] Create StatsPanel component
+- [x] Create WatchlistTabs component
+- [x] Build Watchlist page with all CRUD
+- [x] Implement GET /api/watchlist/stats
+- [x] Create StatsPanel component
 
 ### Phase 7: UI Polish
 - [ ] Implement dark theme CSS variables
