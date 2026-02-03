@@ -32,13 +32,13 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 
 ## Backlog (Priority Order)
 
-### Phase 3: User Services
-- [ ] Create User Mongoose schema with services array
-- [ ] Implement /api/user/services GET endpoint
-- [ ] Implement /api/user/services PUT endpoint
-- [ ] Create ServiceSelectionGrid component
-- [ ] Build onboarding flow with service selection
-- [ ] Create ServiceBadge component
+### Phase 3: User Services ✓
+- [x] Create User Mongoose schema with services array
+- [x] Implement /api/user/services GET endpoint
+- [x] Implement /api/user/services PUT endpoint
+- [x] Create ServiceSelectionGrid component
+- [x] Build onboarding flow with service selection
+- [x] Create ServiceBadge component
 
 ### Phase 4: TMDB Integration
 - [ ] Create TMDB service with API key config
@@ -71,6 +71,7 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 
 ### Phase 7: UI Polish
 - [ ] Implement dark theme CSS variables
+- [ ] Take inspiration from Netflix UI, Google Home, and Letterboxd
 - [ ] Add glassmorphism effects
 - [ ] Create ContentCard with poster gradient
 - [ ] Implement Angular animations (fade, stagger)

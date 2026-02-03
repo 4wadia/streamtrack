@@ -1,10 +1,15 @@
 import { Routes } from '@angular/router';
-import { guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
     {
         path: '',
         loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
+    },
+    {
+        path: 'onboarding',
+        loadComponent: () => import('./features/onboarding/onboarding.component').then(m => m.OnboardingComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'login',
@@ -21,3 +26,4 @@ export const routes: Routes = [
         redirectTo: ''
     }
 ];
+

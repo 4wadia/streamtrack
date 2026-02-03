@@ -240,7 +240,8 @@ export class RegisterComponent {
 
         try {
             await this.authService.register(this.email, this.password, this.name);
-            this.router.navigate(['/']);
+            // Navigate to onboarding to select streaming services
+            this.router.navigate(['/onboarding']);
         } catch (error) {
             // Error is handled by AuthService
         } finally {
