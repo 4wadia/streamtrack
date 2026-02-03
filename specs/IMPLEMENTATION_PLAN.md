@@ -47,15 +47,15 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 - [x] Create /api/content/:id endpoint for details
 - [x] Add watch provider filtering to queries
 
-### Phase 5: Vibe Discovery Engine
-- [ ] Implement VIBE_MAP configuration
-- [ ] Create /api/discover?vibe= endpoint
-- [ ] Filter results by user's watch providers
-- [ ] Implement /api/discover/vibes list endpoint
-- [ ] Create VibePillBar component
-- [ ] Build Discover page with vibe selection
-- [ ] Implement "Tonight's Pick" algorithm
-- [ ] Create TonightsPick hero component
+### Phase 5: Vibe Discovery Engine ✓
+- [x] Implement VIBE_MAP configuration
+- [x] Create /api/discover?vibe= endpoint
+- [x] Filter results by user's watch providers
+- [x] Implement /api/discover/vibes list endpoint
+- [x] Create VibePillBar component
+- [x] Build Discover page with vibe selection
+- [x] Implement "Tonight's Pick" algorithm
+- [x] Create TonightsPick hero component
 
 ### Phase 6: Watchlist
 - [ ] Add watchlist array to User schema
