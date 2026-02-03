@@ -40,12 +40,12 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 - [x] Build onboarding flow with service selection
 - [x] Create ServiceBadge component
 
-### Phase 4: TMDB Integration
-- [ ] Create TMDB service with API key config
-- [ ] Implement response caching (in-memory LRU)
-- [ ] Create /api/search endpoint proxying TMDB
-- [ ] Create /api/content/:id endpoint for details
-- [ ] Add watch provider filtering to queries
+### Phase 4: TMDB Integration ✓
+- [x] Create TMDB service with API key config
+- [x] Implement response caching (in-memory LRU)
+- [x] Create /api/search endpoint proxying TMDB
+- [x] Create /api/content/:id endpoint for details
+- [x] Add watch provider filtering to queries
 
 ### Phase 5: Vibe Discovery Engine
 - [ ] Implement VIBE_MAP configuration

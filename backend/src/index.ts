@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { initializeFirebase } from './services/firebase.service';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
+import contentRoutes from './routes/content.routes';
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.get('/health', (_req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/content', contentRoutes);
 
 app.get('/api', (_req, res) => {
     res.json({ message: 'StreamTrack API v0.0.0' });
