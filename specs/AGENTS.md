@@ -56,7 +56,8 @@ bun run typecheck
 bun run lint
 
 # Unit tests
-bun test
+cd backend && bun test       # Backend: 24 tests
+cd frontend && bun run test  # Frontend: 9 tests (Vitest)
 
 # E2E tests (when available)
 bun run test:e2e
