@@ -68,16 +68,16 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 - [x] Implement GET /api/watchlist/stats
 - [x] Create StatsPanel component
 
-### Phase 7: UI Polish
-- [ ] Implement dark theme CSS variables
-- [ ] Take inspiration from Netflix UI, Google Home, and Letterboxd
-- [ ] Add glassmorphism effects
-- [ ] Create ContentCard with poster gradient
-- [ ] Implement Angular animations (fade, stagger)
-- [ ] Build responsive grid layouts
-- [ ] Create Skeleton loading components
-- [ ] Add hover micro-interactions
-- [ ] Implement search with instant results
+### Phase 7: Cinematic Design Overhaul (Aggressive Frontend Skill)
+- [x] **Typography**: Switch to 'Roboto' (Google Fonts).
+- [x] **Theme**: Implement "Netflix Red" (#E50914) accent.
+- [x] **Home**: Build Smooth Backdrop Carousel.
+- [x] **Search**: Clean up UI headers.
+- [x] **Icons**: Replace emojis with `lucide-angular` icons.
+- [x] **Global FX**: Add grain overlay, smooth scrolling, custom scrollbars.
+- [x] **Components**: Redesign `ContentCard` with specialized hover states (tilt/glow).
+- [x] **Navigation**: Implement "Floating Island" Navbar with glassmorphism.
+- [x] **Motion**: Orchestrate dramatic page loads (staggered text/cards).
 
 ### Phase 8: Testing & Verification
 - [ ] Write backend unit tests for VibeService

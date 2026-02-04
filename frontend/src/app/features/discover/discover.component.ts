@@ -6,6 +6,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { VibePillBarComponent } from '../../shared/components/vibe-pill-bar/vibe-pill-bar.component';
 import { ContentCardComponent } from '../../shared/components/content-card/content-card.component';
 import { TonightsPickComponent } from '../../shared/components/tonights-pick/tonights-pick.component';
+import { fadeAnimation, staggerAnimation } from '../../shared/animations/fade.animation';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 
 @Component({
     selector: 'app-discover',
@@ -15,19 +17,12 @@ import { TonightsPickComponent } from '../../shared/components/tonights-pick/ton
         RouterLink,
         VibePillBarComponent,
         ContentCardComponent,
-        TonightsPickComponent
+        TonightsPickComponent,
+        NavbarComponent
     ],
     template: `
-        <div class="discover-container">
-            <nav class="navbar glass">
-                <a routerLink="/" class="logo">
-                    <h2>🎬 StreamTrack</h2>
-                </a>
-                <div class="nav-actions">
-                    <a routerLink="/watchlist" class="nav-link">Watchlist</a>
-                    <span class="user-email">{{ authService.user()?.email }}</span>
-                </div>
-            </nav>
+        <div class="discover-container" @fade>
+            <app-navbar />
 
             <main class="main-content">
                 <!-- Tonight's Pick Section -->
@@ -51,7 +46,7 @@ import { TonightsPickComponent } from '../../shared/components/tonights-pick/ton
                 <!-- Content Grid -->
                 <section class="content-section">
                     @if (selectedVibe()) {
-                        <div class="section-header">
+                        <div class="section-header" @fade>
                             <h2 class="section-title">
                                 {{ getSelectedVibeEmoji() }} {{ getSelectedVibeName() }} picks
                             </h2>
@@ -67,26 +62,23 @@ import { TonightsPickComponent } from '../../shared/components/tonights-pick/ton
                             </div>
                         </div>
                     } @else {
-                        <h2 class="section-title">Trending Now</h2>
+                        <h2 class="section-title" @fade>Trending Now</h2>
                     }
 
                     @if (loading()) {
-                        <div class="loading-grid">
-                            @for (i of [1,2,3,4,5,6,7,8]; track i) {
-                                <div class="skeleton-card">
-                                    <div class="skeleton-poster"></div>
-                                    <div class="skeleton-title"></div>
-                                </div>
+                        <div class="content-grid" @stagger>
+                            @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+                                <app-content-card [isLoading]="true" />
                             }
                         </div>
                     } @else if (content().length > 0) {
-                        <div class="content-grid">
+                        <div class="content-grid" @stagger>
                             @for (item of content(); track item.id) {
                                 <app-content-card [content]="item" />
                             }
                         </div>
                     } @else {
-                        <div class="empty-state">
+                        <div class="empty-state" @fade>
                             <p>No content found. Try selecting different services in your profile.</p>
                         </div>
                     }
@@ -94,57 +86,17 @@ import { TonightsPickComponent } from '../../shared/components/tonights-pick/ton
             </main>
         </div>
     `,
+    animations: [fadeAnimation, staggerAnimation],
     styles: [`
         .discover-container {
             min-height: 100vh;
-        }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--space-md) var(--space-xl);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .logo h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: var(--space-lg);
-        }
-
-        .nav-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color var(--transition-fast);
-        }
-
-        .nav-link:hover {
-            color: var(--text-primary);
-        }
-
-        .user-email {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
         }
 
         .main-content {
             padding: var(--space-lg) var(--space-xl);
             max-width: 1400px;
             margin: 0 auto;
+            padding-bottom: var(--space-2xl);
         }
 
         .tonights-section {
@@ -156,9 +108,10 @@ import { TonightsPickComponent } from '../../shared/components/tonights-pick/ton
         }
 
         .section-title {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: var(--space-lg);
+            color: var(--text-primary);
         }
 
         .section-header {
@@ -171,63 +124,45 @@ import { TonightsPickComponent } from '../../shared/components/tonights-pick/ton
         .type-toggle {
             display: flex;
             gap: var(--space-sm);
+            background: var(--bg-secondary);
+            padding: var(--space-xs);
+            border-radius: var(--radius-lg);
         }
 
         .type-toggle button {
             padding: var(--space-sm) var(--space-md);
-            border: 1px solid var(--glass-border);
+            border: none;
             background: transparent;
             color: var(--text-secondary);
             border-radius: var(--radius-md);
             cursor: pointer;
             transition: all var(--transition-fast);
+            font-weight: 500;
+        }
+
+        .type-toggle button:hover {
+            color: var(--text-primary);
         }
 
         .type-toggle button.active {
-            background: var(--accent-primary);
-            border-color: var(--accent-primary);
+            background: var(--bg-elevated);
             color: white;
+            box-shadow: var(--shadow-sm);
         }
 
         .content-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: var(--space-lg);
-        }
-
-        .loading-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: var(--space-lg);
-        }
-
-        .skeleton-card {
-            animation: shimmer 1.5s infinite;
-        }
-
-        .skeleton-poster {
-            aspect-ratio: 2/3;
-            background: var(--bg-elevated);
-            border-radius: var(--radius-lg);
-            margin-bottom: var(--space-sm);
-        }
-
-        .skeleton-title {
-            height: 20px;
-            background: var(--bg-elevated);
-            border-radius: var(--radius-sm);
-            width: 80%;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: var(--space-xl) var(--space-lg);
         }
 
         .empty-state {
             text-align: center;
             padding: var(--space-2xl);
             color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px dashed var(--bg-elevated);
         }
     `]
 })

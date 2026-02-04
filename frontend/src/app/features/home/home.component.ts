@@ -1,265 +1,244 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { DiscoverService, ContentItem } from '../../core/services/discover.service';
+import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
+import { HeroCarouselComponent } from '../../shared/components/hero-carousel/hero-carousel.component';
+import { fadeAnimation, staggerAnimation } from '../../shared/animations/fade.animation';
+import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, ChevronRight } from 'lucide-angular';
 
 @Component({
     selector: 'app-home',
     standalone: true,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule, RouterLink, NavbarComponent, HeroCarouselComponent, LucideAngularModule],
     template: `
-        <div class="home-container">
-            <nav class="navbar glass">
-                <div class="logo">
-                    <h2>🎬 StreamTrack</h2>
-                </div>
-                <div class="nav-actions">
-                    @if (authService.isAuthenticated()) {
-                        <span class="user-email">{{ authService.user()?.email }}</span>
-                        <button class="btn-secondary" (click)="logout()">Logout</button>
-                    } @else {
-                        <a routerLink="/login" class="btn-secondary">Sign In</a>
-                        <a routerLink="/register" class="btn-primary">Get Started</a>
+    <div class="home-container" @fade>
+      <app-navbar />
+
+      <main class="main-content">
+        @if (authService.loading()) {
+            <div class="loading-state">
+                <div class="spinner-large"></div>
+            </div>
+        } @else if (authService.isAuthenticated()) {
+            
+            <section class="hero-carousel-section" @fade>
+                @if (trendingContent().length > 0) {
+                    <app-hero-carousel [items]="trendingContent()"></app-hero-carousel>
+                } @else {
+                    <div class="loading-placeholder"></div>
+                }
+            </section>
+
+            <section class="vibes-section" @stagger>
+                <h2 class="section-title">Browse by Vibe</h2>
+                <div class="vibe-pills">
+                    @for (vibe of vibes; track vibe.name) {
+                        <div class="vibe-pill glass-panel" [style.border-color]="vibe.color">
+                            <lucide-icon [name]="vibe.icon" [style.color]="vibe.color" size="18"></lucide-icon>
+                            <span>{{ vibe.name }}</span>
+                        </div>
                     }
                 </div>
-            </nav>
+            </section>
 
-            <main class="main-content">
-                @if (authService.loading()) {
-                    <div class="loading-state">
-                        <div class="spinner-large"></div>
-                        <p>Loading...</p>
-                    </div>
-                } @else if (authService.isAuthenticated()) {
-                    <div class="welcome-section">
-                        <h1 class="text-display">Welcome, {{ authService.user()?.name || 'there' }}!</h1>
-                        <p class="text-secondary">Your personalized streaming discovery experience is coming soon.</p>
-                        
-                        <div class="features-preview">
-                            <div class="feature-card glass">
-                                <span class="feature-icon">🎯</span>
-                                <h3>Vibe Discovery</h3>
-                                <p>Find content based on your mood</p>
-                            </div>
-                            <div class="feature-card glass">
-                                <span class="feature-icon">📺</span>
-                                <h3>Service Filter</h3>
-                                <p>Only see what's on your subscriptions</p>
-                            </div>
-                            <div class="feature-card glass">
-                                <span class="feature-icon">📋</span>
-                                <h3>Watchlist</h3>
-                                <p>Track what you want to watch</p>
-                            </div>
-                        </div>
-                    </div>
-                } @else {
-                    <div class="hero-section">
-                        <h1 class="text-display">Discover Your Next Favorite</h1>
-                        <p class="hero-subtitle">Personalized streaming recommendations based on your vibe. Only shows what's on your services.</p>
-                        
-                        <div class="vibe-pills">
-                            @for (vibe of vibes; track vibe.name) {
-                                <span class="vibe-pill" [style.background]="vibe.color">
-                                    {{ vibe.emoji }} {{ vibe.name }}
-                                </span>
-                            }
-                        </div>
-
-                        <div class="cta-buttons">
-                            <a routerLink="/register" class="btn-primary btn-large">Get Started Free</a>
-                            <a routerLink="/login" class="btn-secondary btn-large">Sign In</a>
-                        </div>
-                    </div>
-                }
-            </main>
-        </div>
-    `,
+        } @else {
+            <div class="hero-section" @stagger>
+                <h1 class="text-display-huge">Stream<br>Different</h1>
+                <p class="hero-subtitle">Stop scrolling. Start watching. Discovery powered by how you actually feel.</p>
+                
+                <div class="cta-buttons">
+                    <a routerLink="/register" class="btn-primary btn-large group">
+                        <span>Get Started</span>
+                        <lucide-icon [name]="ChevronRight" class="btn-icon group-hover:translate-x-1 transition-transform"></lucide-icon>
+                    </a>
+                    <a routerLink="/login" class="btn-secondary btn-large">Sign In</a>
+                </div>
+            </div>
+        }
+      </main>
+    </div>
+  `,
+    animations: [fadeAnimation, staggerAnimation],
     styles: [`
-        .home-container {
-            min-height: 100vh;
-        }
+    .home-container {
+        min-height: 100vh;
+        background-color: var(--bg-cinema-black);
+    }
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--space-md) var(--space-xl);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+    /* Remove padding for main content so carousel hits edges */
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
 
-        .logo h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
+    .hero-carousel-section {
+        width: 100%;
+        margin-bottom: var(--space-2xl);
+    }
 
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-        }
+    .vibes-section {
+        padding: 0 var(--space-xl);
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+    }
 
-        .user-email {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: var(--space-lg);
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
 
-        .btn-primary, .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-sm) var(--space-lg);
-            border-radius: var(--radius-md);
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            border: none;
-        }
+    .loading-placeholder {
+        height: 80vh;
+        width: 100%;
+        background: var(--bg-cinema-elevated);
+        animation: pulse 2s infinite;
+    }
 
-        .btn-primary {
-            background: var(--accent-primary);
-            color: white;
-        }
+    /* Keep Guest Hero Specifics */
+    .hero-section {
+        text-align: center;
+        margin: auto;
+        padding: var(--space-3xl) var(--space-xl);
+        max-width: 1000px;
+    }
 
-        .btn-primary:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
+    .hero-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.5rem;
+        line-height: 1.6;
+        max-width: 600px;
+        margin: var(--space-xl) auto var(--space-3xl);
+        font-weight: 300;
+        opacity: 0.8;
+    }
 
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-primary);
-            border: 1px solid var(--glass-border);
-        }
+    .vibe-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-md);
+    }
 
-        .btn-secondary:hover {
-            background: var(--bg-elevated);
-        }
+    .vibe-pill {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 24px;
+        border-radius: 99px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.3s var(--ease-cinema);
+        cursor: pointer;
+    }
 
-        .btn-large {
-            padding: var(--space-md) var(--space-2xl);
-            font-size: 1rem;
-        }
+    .vibe-pill:hover {
+        transform: translateY(-4px);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: white !important;
+    }
 
-        .main-content {
-            padding: var(--space-2xl);
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    .cta-buttons {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-lg);
+        margin-top: var(--space-2xl);
+    }
 
-        .loading-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 50vh;
-            gap: var(--space-lg);
-        }
+    .btn-primary, .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 40px;
+        border-radius: 4px; /* Netflix style rect buttons */
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s var(--ease-cinema);
+    }
 
-        .spinner-large {
-            width: 48px;
-            height: 48px;
-            border: 3px solid var(--bg-elevated);
-            border-top-color: var(--accent-primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
+    .btn-primary {
+        background: var(--accent-netflix-red);
+        color: white;
+        border: none;
+    }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+    .btn-primary:hover {
+        background: #f40612;
+    }
 
-        .hero-section, .welcome-section {
-            text-align: center;
-            padding-top: var(--space-2xl);
-        }
+    .btn-secondary {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+    }
 
-        .hero-section h1, .welcome-section h1 {
-            margin-bottom: var(--space-lg);
-        }
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: white;
+    }
 
-        .hero-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.25rem;
-            max-width: 600px;
-            margin: 0 auto var(--space-2xl);
-        }
+    .loading-state {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .spinner-large {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(255,255,255,0.1);
+        border-top-color: var(--accent-netflix-red);
+        border-radius: 50%;
+        animation: spin 1s infinite linear;
+    }
 
-        .vibe-pills {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: var(--space-md);
-            margin-bottom: var(--space-2xl);
-        }
-
-        .vibe-pill {
-            padding: var(--space-sm) var(--space-lg);
-            border-radius: var(--radius-full);
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: white;
-            opacity: 0.9;
-        }
-
-        .cta-buttons {
-            display: flex;
-            justify-content: center;
-            gap: var(--space-lg);
-        }
-
-        .features-preview {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-lg);
-            margin-top: var(--space-2xl);
-        }
-
-        .feature-card {
-            padding: var(--space-xl);
-            text-align: center;
-            transition: transform var(--transition-normal);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-4px);
-        }
-
-        .feature-icon {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: var(--space-md);
-        }
-
-        .feature-card h3 {
-            margin-bottom: var(--space-sm);
-        }
-
-        .feature-card p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .text-secondary {
-            color: var(--text-secondary);
-        }
-    `]
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+  `]
 })
 export class HomeComponent {
     authService = inject(AuthService);
+    discoverService = inject(DiscoverService);
+
+    trendingContent = signal<ContentItem[]>([]);
+
+    readonly ChevronRight = ChevronRight;
 
     vibes = [
-        { name: 'Cozy', emoji: '🛋️', color: 'var(--vibe-cozy)' },
-        { name: 'Intense', emoji: '⚡', color: 'var(--vibe-intense)' },
-        { name: 'Mindless', emoji: '🍿', color: 'var(--vibe-mindless)' },
-        { name: 'Thoughtful', emoji: '🧠', color: 'var(--vibe-thoughtful)' },
-        { name: 'Dark', emoji: '🌙', color: 'var(--vibe-dark)' },
-        { name: 'Funny', emoji: '😂', color: 'var(--vibe-funny)' }
+        { name: 'Cozy', icon: Coffee, color: '#eebc1d' },
+        { name: 'Intense', icon: Zap, color: '#E50914' },
+        { name: 'Mindless', icon: Gamepad2, color: '#46d369' },
+        { name: 'Thoughtful', icon: Lightbulb, color: '#10b981' },
+        { name: 'Dark', icon: Moon, color: '#8b5cf6' },
+        { name: 'Funny', icon: Smile, color: '#f59e0b' }
     ];
+
+    constructor() {
+        effect(() => {
+            if (this.authService.isAuthenticated()) {
+                this.loadTrending();
+            }
+        });
+    }
+
+    // async ngOnInit() removed as it is replaced by effect
+
+    async loadTrending() {
+        try {
+            const trending = await this.discoverService.getTrending('all');
+            // Take top 5 for carousel
+            this.trendingContent.set(trending.slice(0, 5));
+        } catch (error) {
+            console.error('Failed to load trending content', error);
+        }
+    }
 
     logout() {
         this.authService.logout();
