@@ -11,6 +11,8 @@
 npm-debug.log
 yarn-error.log
 
+# secrets
+.env
 # IDEs and editors
 .idea/
 .project
