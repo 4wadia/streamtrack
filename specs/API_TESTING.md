@@ -241,6 +241,77 @@ Base URL: `http://localhost:3000` (or your configured port)
     }
     ```
 
+### Get User's Custom Vibes
+*   **Endpoint:** `GET /api/vibes/custom`
+*   **Description:** Returns user's custom vibes (max 5).
+*   **Headers:** `Authorization: Bearer <TOKEN>`
+*   **Response:**
+    ```json
+    {
+        "customVibes": [
+            {
+                "id": "my-action-vibe",
+                "name": "My Action Mix",
+                "genres": [28, 53],
+                "minRating": 7.5,
+                "createdAt": "2024-02-03T12:00:00.000Z"
+            }
+        ]
+    }
+    ```
+
+### Create Custom Vibe
+*   **Endpoint:** `POST /api/vibes/custom`
+*   **Description:** Creates a new custom vibe (max 5 allowed).
+*   **Headers:** `Authorization: Bearer <TOKEN>`
+*   **Body:**
+    ```json
+    {
+        "name": "My Action Mix",
+        "genres": [28, 53],
+        "minRating": 7.5
+    }
+    ```
+*   **Response (201 Created):**
+    ```json
+    {
+        "message": "Custom vibe created",
+        "vibe": { ... }
+    }
+    ```
+*   **Error (400):** If user already has 5 custom vibes.
+
+### Update Custom Vibe
+*   **Endpoint:** `PUT /api/vibes/custom/:id`
+*   **Description:** Updates an existing custom vibe.
+*   **Headers:** `Authorization: Bearer <TOKEN>`
+*   **Body:** (any subset of fields)
+    ```json
+    {
+        "name": "Updated Name",
+        "genres": [28, 80],
+        "minRating": 8.0
+    }
+    ```
+*   **Response:**
+    ```json
+    {
+        "message": "Custom vibe updated",
+        "vibe": { ... }
+    }
+    ```
+
+### Delete Custom Vibe
+*   **Endpoint:** `DELETE /api/vibes/custom/:id`
+*   **Description:** Deletes a custom vibe.
+*   **Headers:** `Authorization: Bearer <TOKEN>`
+*   **Response:**
+    ```json
+    {
+        "message": "Custom vibe deleted"
+    }
+    ```
+
 ## 6. Watchlist
 
 ### Get Watchlist
@@ -322,3 +393,50 @@ Base URL: `http://localhost:3000` (or your configured port)
         "message": "Removed from watchlist"
     }
     ```
+
+---
+
+## Appendix: Reference Data
+
+### TMDB Genre IDs (for Custom Vibes)
+
+| ID | Genre |
+|----|-------|
+| 28 | Action |
+| 16 | Animation |
+| 35 | Comedy |
+| 80 | Crime |
+| 99 | Documentary |
+| 18 | Drama |
+| 10751 | Family |
+| 14 | Fantasy |
+| 27 | Horror |
+| 9648 | Mystery |
+| 10749 | Romance |
+| 878 | Science Fiction |
+| 53 | Thriller |
+| 10752 | War |
+
+### Supported Streaming Services
+
+| ID | Name | TMDB Provider ID |
+|----|------|------------------|
+| `netflix` | Netflix | 8 |
+| `prime` | Amazon Prime Video | 9 |
+| `jiohotstar` | JioHotstar | 337 |
+| `hbo` | HBO Max | 384 |
+| `hulu` | Hulu | 15 |
+| `apple` | Apple TV+ | 350 |
+| `paramount` | Paramount+ | 531 |
+
+### Predefined Vibes
+
+| ID | Name | Genres |
+|----|------|--------|
+| `cozy` | Cozy | Romance, Comedy, Animation, Family |
+| `intense` | Intense | Thriller, Action, Crime |
+| `mindless` | Mindless | Comedy, Animation |
+| `thoughtful` | Thoughtful | Documentary, Drama, Mystery |
+| `dark` | Dark | Horror, Thriller, Mystery |
+| `funny` | Funny | Comedy |
+
