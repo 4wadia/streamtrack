@@ -136,7 +136,7 @@ class TMDBService {
     private baseUrl = 'https://api.themoviedb.org/3';
     private imageBaseUrl = 'https://image.tmdb.org/t/p';
     private cache = new LRUCache<any>(200);
-    private region = 'US'; // Default region for watch providers
+    private region = 'IN'; // Default region for watch providers
 
     constructor() {
         this.apiKey = process.env.TMDB_API_KEY || '';
@@ -323,7 +323,7 @@ class TMDBService {
         const mapping: Record<number, string> = {
             8: 'netflix',
             9: 'prime',
-            337: 'disney',
+            337: 'jiohotstar',
             384: 'hbo',
             15: 'hulu',
             350: 'apple',

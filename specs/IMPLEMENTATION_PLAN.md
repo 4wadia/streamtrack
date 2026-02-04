@@ -80,8 +80,8 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 - [x] **Motion**: Orchestrate dramatic page loads (staggered text/cards).
 
 ### Phase 8: Testing & Verification
-- [ ] Write backend unit tests for VibeService
-- [ ] Write backend unit tests for AuthMiddleware
+- [x] Write backend unit tests for VibeService
+- [x] Write backend unit tests for AuthMiddleware
 - [ ] Add E2E test: login → select service → vibe → results
 - [ ] Verify responsive design on mobile
 - [ ] Performance test with many poster images
