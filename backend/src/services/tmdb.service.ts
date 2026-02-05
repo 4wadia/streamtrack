@@ -334,12 +334,13 @@ class TMDBService {
 
     /**
      * Get our internal provider IDs as TMDB provider IDs
+     * Note: TMDB ID 337 is "JioHotstar" in India market (formerly Disney+ Hotstar)
      */
     getProviderTmdbIds(serviceIds: string[]): number[] {
         const mapping: Record<string, number> = {
             'netflix': 8,
             'prime': 9,
-            'disney': 337,
+            'jiohotstar': 337,  // India: JioHotstar (formerly Disney+ Hotstar)
             'hbo': 384,
             'hulu': 15,
             'apple': 350,

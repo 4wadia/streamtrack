@@ -38,7 +38,7 @@ export class ServiceBadgeComponent {
     private serviceData: Record<string, { name: string; emoji: string }> = {
         'netflix': { name: 'Netflix', emoji: '🔴' },
         'prime': { name: 'Prime Video', emoji: '📦' },
-        'disney': { name: 'Disney+', emoji: '🏰' },
+        'jiohotstar': { name: 'JioHotstar', emoji: '🌟' },
         'hbo': { name: 'HBO Max', emoji: '🟣' },
         'hulu': { name: 'Hulu', emoji: '💚' },
         'apple': { name: 'Apple TV+', emoji: '🍎' },

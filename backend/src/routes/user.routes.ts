@@ -6,10 +6,11 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.middleware';
 const router: RouterType = Router();
 
 // Supported streaming services with TMDB provider IDs
+// Note: TMDB ID 337 is "JioHotstar" in India market (formerly Disney+ Hotstar)
 export const SUPPORTED_SERVICES = [
     { id: 'netflix', name: 'Netflix', providerId: 8 },
     { id: 'prime', name: 'Amazon Prime Video', providerId: 9 },
-    { id: 'disney', name: 'Disney+', providerId: 337 },
+    { id: 'jiohotstar', name: 'JioHotstar', providerId: 337 },
     { id: 'hbo', name: 'HBO Max', providerId: 384 },
     { id: 'hulu', name: 'Hulu', providerId: 15 },
     { id: 'apple', name: 'Apple TV+', providerId: 350 },

@@ -55,11 +55,11 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 > [!IMPORTANT]
 > **MANDATORY SKILL USAGE**: All agents MUST read and follow `.agent/skills/senior-frontend/SKILL.md` before ANY frontend work. Use the skill's component generator, bundle analyzer, and frontend best practices references.
 
-### Phase 8.1: API Critical Fixes
-- [ ] **Fix Region to India**: Update `tmdb.service.ts` region from 'US' to 'IN'
-- [ ] **Fix Provider Mapping**: Update JioHotstar mapping (TMDB ID 337 → `jiohotstar`, not `disney`)
-- [ ] **Sync Provider Mappings**: Ensure `mapProviderId()` and `getProviderTmdbIds()` have consistent mappings
-- [ ] **Update SUPPORTED_SERVICES**: Add JioHotstar as a service option in `user.routes.ts`
+### Phase 8.1: API Critical Fixes ✓
+- [x] **Fix Region to India**: Region already set to 'IN' in `tmdb.service.ts`
+- [x] **Fix Provider Mapping**: Updated TMDB ID 337 → `jiohotstar` (was `disney`)
+- [x] **Sync Provider Mappings**: `mapProviderId()` and `getProviderTmdbIds()` now consistent
+- [x] **Update SUPPORTED_SERVICES**: JioHotstar added across all files (routes, types, frontend components)
 
 ### Phase 8.2: Custom Vibes Feature (API)
 - [ ] Add `customVibes` array to User schema (max 5 custom vibes)
@@ -325,9 +325,8 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 
 ## Discovered Issues
 <!-- Populated during implementation -->
-- Provider mapping mismatch: `disney` vs `jiohotstar` for TMDB ID 337
-- Region hardcoded to 'US', should be 'IN' for India market
-- Emojis still present in VIBE_MAP (need icon replacements)
+- Emojis still present in VIBE_MAP (need icon replacements) - Phase 15.1
+- Watchlist tests have timeout issues (pre-existing, unrelated to provider fixes)
 
 ---
 

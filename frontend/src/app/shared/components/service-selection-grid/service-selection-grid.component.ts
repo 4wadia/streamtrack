@@ -97,7 +97,7 @@ export class ServiceSelectionGridComponent implements OnInit {
     private serviceEmojis: Record<string, string> = {
         'netflix': '🔴',
         'prime': '📦',
-        'disney': '🏰',
+        'jiohotstar': '🌟',
         'hbo': '🟣',
         'hulu': '💚',
         'apple': '🍎',
