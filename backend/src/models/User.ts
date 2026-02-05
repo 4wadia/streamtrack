@@ -12,12 +12,22 @@ export interface IWatchlistItem {
     updatedAt?: Date;
 }
 
+export interface ICustomVibe {
+    id: string;           // UUID for identification
+    name: string;         // User-defined name
+    genres: number[];     // TMDB genre IDs
+    minRating?: number;   // Optional minimum rating filter
+    color?: string;       // Optional custom color hex
+    createdAt: Date;
+}
+
 export interface IUser extends Document {
     firebaseUid: string;
     email: string;
     name?: string;
     services: string[];
     watchlist: IWatchlistItem[];
+    customVibes: ICustomVibe[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -34,12 +44,22 @@ const WatchlistItemSchema = new Schema<IWatchlistItem>({
     updatedAt: Date
 }, { _id: false });
 
+const CustomVibeSchema = new Schema<ICustomVibe>({
+    id: { type: String, required: true },
+    name: { type: String, required: true, maxlength: 50 },
+    genres: { type: [Number], required: true, validate: [(v: number[]) => v.length > 0, 'At least one genre required'] },
+    minRating: { type: Number, min: 0, max: 10 },
+    color: { type: String, match: /^#[0-9A-Fa-f]{6}$/ },
+    createdAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const UserSchema = new Schema<IUser>({
     firebaseUid: { type: String, required: true, unique: true, index: true },
     email: { type: String, required: true },
     name: String,
     services: { type: [String], default: [] },
-    watchlist: { type: [WatchlistItemSchema], default: [] }
+    watchlist: { type: [WatchlistItemSchema], default: [] },
+    customVibes: { type: [CustomVibeSchema], default: [], validate: [(v: ICustomVibe[]) => v.length <= 5, 'Maximum 5 custom vibes allowed'] }
 }, { timestamps: true });
 
 export const User = mongoose.model<IUser>('User', UserSchema);

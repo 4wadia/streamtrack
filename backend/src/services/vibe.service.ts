@@ -155,6 +155,41 @@ class VibeService {
     }
 
     /**
+     * Discover content by custom vibe (user-defined)
+     */
+    async discoverByCustomVibe(
+        customVibe: { id: string; name: string; genres: number[]; minRating?: number; color?: string },
+        userServices: string[],
+        type: 'movie' | 'tv' = 'movie',
+        page = 1
+    ): Promise<{ results: ContentItem[]; vibe: VibeDefinition }> {
+        // Convert custom vibe to VibeDefinition format
+        const vibeDefinition: VibeDefinition = {
+            id: `custom-${customVibe.id}`,
+            name: customVibe.name,
+            emoji: '✨', // Default emoji for custom vibes
+            color: customVibe.color || '#6366f1', // Default indigo
+            description: `Custom vibe: ${customVibe.name}`,
+            genres: customVibe.genres,
+            minRating: customVibe.minRating
+        };
+
+        // Convert user services to TMDB provider IDs
+        const providerIds = tmdbService.getProviderTmdbIds(userServices);
+
+        // Discover content with custom vibe filters
+        const results = await tmdbService.discover(type, {
+            genres: customVibe.genres,
+            providers: providerIds.length > 0 ? providerIds : undefined,
+            minRating: customVibe.minRating,
+            page,
+            sortBy: 'popularity.desc'
+        });
+
+        return { results, vibe: vibeDefinition };
+    }
+
+    /**
      * Get "Tonight's Pick" - personalized recommendation
      */
     async getTonightsPick(

@@ -61,15 +61,15 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 - [x] **Sync Provider Mappings**: `mapProviderId()` and `getProviderTmdbIds()` now consistent
 - [x] **Update SUPPORTED_SERVICES**: JioHotstar added across all files (routes, types, frontend components)
 
-### Phase 8.2: Custom Vibes Feature (API)
-- [ ] Add `customVibes` array to User schema (max 5 custom vibes)
-- [ ] Create vibe interface: `{ id, name, genres: number[], minRating?: number }`
-- [ ] Implement `POST /api/vibes/custom` - Create custom vibe
-- [ ] Implement `GET /api/vibes/custom` - Get user's custom vibes
-- [ ] Implement `PUT /api/vibes/custom/:id` - Update custom vibe
-- [ ] Implement `DELETE /api/vibes/custom/:id` - Delete custom vibe
-- [ ] Update `GET /api/discover/vibes` to return both predefined and custom vibes
-- [ ] Update `GET /api/discover` to support custom vibe IDs
+### Phase 8.2: Custom Vibes Feature (API) ✓
+- [x] Add `customVibes` array to User schema (max 5 custom vibes)
+- [x] Create vibe interface: `{ id, name, genres: number[], minRating?: number }`
+- [x] Implement `POST /api/discover/vibes/custom` - Create custom vibe
+- [x] Implement `GET /api/discover/vibes/custom` - Get user's custom vibes
+- [x] Implement `PUT /api/discover/vibes/custom/:id` - Update custom vibe
+- [x] Implement `DELETE /api/discover/vibes/custom/:id` - Delete custom vibe
+- [x] Update `GET /api/discover/vibes` to return both predefined and custom vibes
+- [x] Update `GET /api/discover` to support custom vibe IDs (`custom-{id}` format)
 
 ---
 
