@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import type { Router as RouterType } from 'express';
 import { vibeService } from '../services/vibe.service';
+import { tmdbService } from '../services/tmdb.service';
 import { authMiddleware, AuthRequest } from '../middleware/auth.middleware';
 import { User } from '../models/User';
 

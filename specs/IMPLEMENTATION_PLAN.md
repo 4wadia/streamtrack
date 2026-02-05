@@ -174,16 +174,16 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 
 ## Phase 12: Account Page
 
-### 12.1: Account Overview
-- [ ] User profile section (name, email)
-- [ ] Account creation date
-- [ ] Watchlist statistics preview
+### 12.1: Account Overview ✓
+- [x] User profile section (name, email)
+- [x] Account creation date (placeholder - Firebase doesn't expose this easily)
+- [x] Watchlist statistics preview
 
-### 12.2: Provider Management
-- [ ] Grid of all available providers
-- [ ] Toggle selection with visual feedback (gray unselected and Colored of the Provider Color like Netfix red, Amazon blue when selected)
-- [ ] Save changes button
-- [ ] Success feedback animation
+### 12.2: Provider Management ✓
+- [x] Grid of all available providers
+- [x] Toggle selection with visual feedback (brand colors for each provider)
+- [x] Save changes button
+- [x] Success feedback animation
 
 ---
 
@@ -327,6 +327,7 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 <!-- Populated during implementation -->
 - Emojis still present in VIBE_MAP (need icon replacements) - Phase 15.1
 - Watchlist tests have timeout issues (pre-existing, unrelated to provider fixes)
+- Backend test files have `bun:test` type declaration errors (runtime works, TypeScript needs config adjustment)
 
 ---
 
