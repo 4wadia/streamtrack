@@ -6,13 +6,14 @@ import { DiscoverService, ContentItem } from '../../core/services/discover.servi
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { HeroCarouselComponent } from '../../shared/components/hero-carousel/hero-carousel.component';
 import { ContentRowComponent } from '../../shared/components/content-row/content-row.component';
+import { TonightsPickFabComponent } from '../../shared/components/tonights-pick-fab/tonights-pick-fab.component';
 import { fadeAnimation, staggerAnimation } from '../../shared/animations/fade.animation';
 import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, ChevronRight } from 'lucide-angular';
 
 @Component({
     selector: 'app-home',
     standalone: true,
-    imports: [CommonModule, RouterLink, NavbarComponent, HeroCarouselComponent, ContentRowComponent, LucideAngularModule],
+    imports: [CommonModule, RouterLink, NavbarComponent, HeroCarouselComponent, ContentRowComponent, TonightsPickFabComponent, LucideAngularModule],
     template: `
     <div class="home-container" @fade>
       <app-navbar />
@@ -78,6 +79,9 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
                     ></app-content-row>
                 }
             </div>
+
+            <!-- Tonight's Pick FAB -->
+            <app-tonights-pick-fab></app-tonights-pick-fab>
 
         } @else {
             <div class="hero-section" @stagger>

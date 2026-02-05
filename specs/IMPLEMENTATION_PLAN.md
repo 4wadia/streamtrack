@@ -194,11 +194,11 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 - [x] Right: Search icon + Watchlist icon + Account avatar
 - [x] Clean, minimal design
 
-### 13.2: Tonight's Pick Floating Button
-- [ ] Squircle floating button in bottom-right corner
-- [ ] Subtle pulse animation when new recommendation available
-- [ ] Click → Show modal with tonight's pick
-- [ ] "Watch Now" and "Try Another" actions
+### 13.2: Tonight's Pick Floating Button ✓
+- [x] Squircle floating button in bottom-right corner
+- [x] Subtle pulse animation when new recommendation available
+- [x] Click → Show modal with tonight's pick
+- [x] "Watch Now" and "Try Another" actions
 
 ---
 
