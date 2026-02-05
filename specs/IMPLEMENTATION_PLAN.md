@@ -155,19 +155,19 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 
 ## Phase 11: Search Page Improvements
 
-### 11.1: Search UX Fixes  
-- [ ] **Fix**: Text disappearing after Enter key pressed
-- [ ] Preserve search query in input field after search
-- [ ] Debounced search (300ms) for live results
-- [ ] Ctrl+K / Cmd+K global shortcut to open search
+### 11.1: Search UX Fixes ✓
+- [x] **Fix**: Text disappearing after Enter key pressed
+- [x] Preserve search query in input field after search
+- [x] Debounced search (300ms) for live results
+- [x] Ctrl+K / Cmd+K global shortcut to open search
 
-### 11.2: Search Results Layout
-- [ ] Top result: Large card on left (featured)
+### 11.2: Search Results Layout ✓
+- [x] Top result: Large card on left (featured)
   - Full backdrop image
   - Title, year, rating
   - Watchlist button
-- [ ] Other results: Compact grid on right
-- [ ] Infinite scroll or "Load More" pagination
+- [x] Other results: Compact grid on right
+- [x] Infinite scroll or "Load More" pagination
 - [ ] Empty state: "No results found for [query]"
 
 ---

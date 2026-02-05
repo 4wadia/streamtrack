@@ -1,6 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -21,7 +21,9 @@ import { LucideAngularModule, Search, LogOut, User, Clapperboard, MonitorPlay } 
         <div class="search-container">
             <lucide-icon [name]="Search" class="search-icon"></lucide-icon>
             <input 
+                #searchInput
                 [formControl]="searchControl"
+                (keydown.enter)="onSearchSubmit()"
                 type="text" 
                 placeholder="Find movies, TV & vibes..." 
                 class="search-input"
@@ -201,6 +203,9 @@ import { LucideAngularModule, Search, LogOut, User, Clapperboard, MonitorPlay } 
 export class NavbarComponent {
     authService = inject(AuthService);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
+
+    @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
     readonly Search = Search;
     readonly LogOut = LogOut;
@@ -211,6 +216,22 @@ export class NavbarComponent {
     searchControl = new FormControl('');
 
     constructor() {
+        // Sync URL query param to search input
+        this.route.queryParams.pipe(
+            takeUntilDestroyed()
+        ).subscribe(params => {
+            const q = params['q'];
+            // Only update if different to avoid cursor jumping
+            // AND check if input is NOT focused to avoid overwriting user while typing
+            // This prevents the "disappearing text" issue when debounce/navigation lags behind typing
+            const isFocused = this.searchInput?.nativeElement === document.activeElement;
+
+            if (q && q !== this.searchControl.value && !isFocused) {
+                this.searchControl.setValue(q, { emitEvent: false });
+            }
+        });
+
+        // Debounced search for typing
         this.searchControl.valueChanges.pipe(
             debounceTime(300),
             distinctUntilChanged(),
@@ -220,6 +241,22 @@ export class NavbarComponent {
                 this.router.navigate(['/search'], { queryParams: { q: query } });
             }
         });
+    }
+
+    // Handle Enter key to force search even with short queries
+    onSearchSubmit() {
+        const query = this.searchControl.value;
+        if (query) {
+            this.router.navigate(['/search'], { queryParams: { q: query } });
+            this.searchInput.nativeElement.blur(); // Remove focus to allow query params to sync back if needed
+        }
+    }
+
+    @HostListener('window:keydown.control.k', ['$event'])
+    @HostListener('window:keydown.meta.k', ['$event'])
+    focusSearch(event: Event) {
+        event.preventDefault();
+        this.searchInput.nativeElement.focus();
     }
 
     getShortEmail(email: string | undefined): string {
