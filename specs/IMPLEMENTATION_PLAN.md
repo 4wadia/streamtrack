@@ -117,39 +117,39 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 > [!CAUTION]
 > This phase has high visual impact. Ensure animations are smooth (60fps). Test on multiple screen sizes.
 
-### 10.1: Hero Carousel Enhancement
-- [ ] Limit to 5 carousel items from trending content
-- [ ] Left section: Title + Overview (max 2-3 lines truncated)
-- [ ] Two buttons:
+### 10.1: Hero Carousel Enhancement ✓
+- [x] Limit to 5 carousel items from trending content
+- [x] Left section: Title + Overview (max 2-3 lines truncated)
+- [x] Two buttons:
   - Primary: "Watch Now" (white background, black text)
   - Secondary: "Add to Watchlist" (gray/faded, glassmorphism)
-- [ ] Smooth crossfade transitions (1s duration)
-- [ ] Auto-rotate every 8 seconds
-- [ ] Vertical dot indicators on right side
+- [x] Smooth crossfade transitions (1s duration)
+- [x] Auto-rotate every 8 seconds
+- [x] Vertical dot indicators on right side
 
-### 10.2: Content Sections
-- [ ] Create `ContentRowComponent` - horizontal scrolling card row
-- [ ] Section headings with subtitle support:
+### 10.2: Content Sections ✓
+- [x] Create `ContentRowComponent` - horizontal scrolling card row
+- [x] Section headings with subtitle support:
   - "Best Picks for You"
   - "Based on Your Vibe"
   - "Best Movies" *(from your subscription - faded)*
   - "Best TV Shows" *(from your subscription - faded)*
-- [ ] Arrow navigation for horizontal scroll
-- [ ] Lazy loading for off-screen cards
+- [x] Arrow navigation for horizontal scroll
+- [x] Lazy loading for off-screen cards
 
-### 10.3: Card Component Redesign
-- [ ] Cards sized to movie poster ratio (2:3)
-- [ ] Hover state: 
+### 10.3: Card Component Redesign ✓
+- [x] Cards sized to movie poster ratio (2:3)
+- [x] Hover state: 
   - Show animated watchlist button (port from `specs/wishlist.tsx` Check 10.4)
   - Subtle glow effect
-- [ ] Smooth 300ms transitions
-- [ ] Click → Navigate to content detail page
+- [x] Smooth 300ms transitions
+- [x] Click → Navigate to content detail page
 
-### 10.4: Animated Watchlist Button
-- [ ] Port `specs/wishlist.tsx` React component to Angular
-- [ ] Use Angular Animations API (not motion/react)
-- [ ] Plus-to-checkmark animation
-- [ ] Integrate into ContentCard hover state
+### 10.4: Animated Watchlist Button ✓
+- [x] Port `specs/wishlist.tsx` React component to Angular
+- [x] Use Angular Animations API (not motion/react)
+- [x] Plus-to-checkmark animation
+- [x] Integrate into ContentCard hover state
 
 ---
 

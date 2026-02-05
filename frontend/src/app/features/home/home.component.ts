@@ -5,13 +5,14 @@ import { AuthService } from '../../core/services/auth.service';
 import { DiscoverService, ContentItem } from '../../core/services/discover.service';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { HeroCarouselComponent } from '../../shared/components/hero-carousel/hero-carousel.component';
+import { ContentRowComponent } from '../../shared/components/content-row/content-row.component';
 import { fadeAnimation, staggerAnimation } from '../../shared/animations/fade.animation';
 import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, ChevronRight } from 'lucide-angular';
 
 @Component({
     selector: 'app-home',
     standalone: true,
-    imports: [CommonModule, RouterLink, NavbarComponent, HeroCarouselComponent, LucideAngularModule],
+    imports: [CommonModule, RouterLink, NavbarComponent, HeroCarouselComponent, ContentRowComponent, LucideAngularModule],
     template: `
     <div class="home-container" @fade>
       <app-navbar />
@@ -23,6 +24,7 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
             </div>
         } @else if (authService.isAuthenticated()) {
             
+            <!-- Hero Carousel -->
             <section class="hero-carousel-section" @fade>
                 @if (trendingContent().length > 0) {
                     <app-hero-carousel [items]="trendingContent()"></app-hero-carousel>
@@ -31,17 +33,51 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
                 }
             </section>
 
-            <section class="vibes-section" @stagger>
-                <h2 class="section-title">Browse by Vibe</h2>
-                <div class="vibe-pills">
-                    @for (vibe of vibes; track vibe.name) {
-                        <div class="vibe-pill glass-panel" [style.border-color]="vibe.color">
-                            <lucide-icon [name]="vibe.icon" [style.color]="vibe.color" size="18"></lucide-icon>
-                            <span>{{ vibe.name }}</span>
-                        </div>
-                    }
-                </div>
-            </section>
+            <!-- Content Rows -->
+            <div class="content-sections">
+                <!-- Best Picks For You -->
+                @if (recommendationsContent().length > 0) {
+                    <app-content-row
+                        title="Best Picks for You"
+                        [items]="recommendationsContent()"
+                    ></app-content-row>
+                }
+
+                <!-- Browse by Vibe -->
+                <section class="vibes-section" @stagger>
+                    <h2 class="section-title">Browse by Vibe</h2>
+                    <div class="vibe-pills">
+                        @for (vibe of vibes; track vibe.name) {
+                            <div 
+                                class="vibe-pill glass-panel" 
+                                [style.border-color]="vibe.color"
+                                (click)="navigateToVibe(vibe.name.toLowerCase())"
+                            >
+                                <lucide-icon [name]="vibe.icon" [style.color]="vibe.color" size="18"></lucide-icon>
+                                <span>{{ vibe.name }}</span>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <!-- Best Movies -->
+                @if (moviesContent().length > 0) {
+                    <app-content-row
+                        title="Best Movies"
+                        subtitle="from your subscriptions"
+                        [items]="moviesContent()"
+                    ></app-content-row>
+                }
+
+                <!-- Best TV Shows -->
+                @if (tvShowsContent().length > 0) {
+                    <app-content-row
+                        title="Best TV Shows"
+                        subtitle="from your subscriptions"
+                        [items]="tvShowsContent()"
+                    ></app-content-row>
+                }
+            </div>
 
         } @else {
             <div class="hero-section" @stagger>
@@ -67,7 +103,6 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
         background-color: var(--bg-cinema-black);
     }
 
-    /* Remove padding for main content so carousel hits edges */
     .main-content {
         display: flex;
         flex-direction: column;
@@ -76,44 +111,47 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
 
     .hero-carousel-section {
         width: 100%;
-        margin-bottom: var(--space-2xl);
+    }
+
+    .content-sections {
+        padding-top: var(--space-xl, 24px);
+        padding-bottom: var(--space-3xl, 64px);
     }
 
     .vibes-section {
-        padding: 0 var(--space-xl);
+        padding: 0 var(--space-xl, 24px);
         max-width: 1400px;
-        margin: 0 auto;
+        margin: 0 auto var(--space-2xl, 48px);
         width: 100%;
     }
 
     .section-title {
         font-size: 1.5rem;
-        margin-bottom: var(--space-lg);
-        color: var(--text-secondary);
-        font-weight: 500;
+        margin-bottom: var(--space-lg, 16px);
+        color: var(--text-primary, white);
+        font-weight: 600;
     }
 
     .loading-placeholder {
         height: 80vh;
         width: 100%;
-        background: var(--bg-cinema-elevated);
+        background: var(--bg-cinema-elevated, #181818);
         animation: pulse 2s infinite;
     }
 
-    /* Keep Guest Hero Specifics */
     .hero-section {
         text-align: center;
         margin: auto;
-        padding: var(--space-3xl) var(--space-xl);
+        padding: var(--space-3xl, 64px) var(--space-xl, 24px);
         max-width: 1000px;
     }
 
     .hero-subtitle {
-        color: var(--text-secondary);
+        color: var(--text-secondary, #A3A3A3);
         font-size: 1.5rem;
         line-height: 1.6;
         max-width: 600px;
-        margin: var(--space-xl) auto var(--space-3xl);
+        margin: var(--space-xl, 24px) auto var(--space-3xl, 64px);
         font-weight: 300;
         opacity: 0.8;
     }
@@ -121,7 +159,7 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
     .vibe-pills {
         display: flex;
         flex-wrap: wrap;
-        gap: var(--space-md);
+        gap: var(--space-md, 12px);
     }
 
     .vibe-pill {
@@ -132,8 +170,9 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
         border-radius: 99px;
         font-size: 0.95rem;
         font-weight: 600;
-        transition: all 0.3s var(--ease-cinema);
+        transition: all 0.3s var(--ease-cinema, cubic-bezier(0.16, 1, 0.3, 1));
         cursor: pointer;
+        border: 1px solid;
     }
 
     .vibe-pill:hover {
@@ -145,8 +184,8 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
     .cta-buttons {
         display: flex;
         justify-content: center;
-        gap: var(--space-lg);
-        margin-top: var(--space-2xl);
+        gap: var(--space-lg, 16px);
+        margin-top: var(--space-2xl, 48px);
     }
 
     .btn-primary, .btn-secondary {
@@ -154,22 +193,23 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
         align-items: center;
         gap: 12px;
         padding: 16px 40px;
-        border-radius: 4px; /* Netflix style rect buttons */
+        border-radius: 4px;
         font-size: 1.1rem;
         font-weight: 700;
         text-decoration: none;
         cursor: pointer;
-        transition: all 0.3s var(--ease-cinema);
+        transition: all 0.3s var(--ease-cinema, cubic-bezier(0.16, 1, 0.3, 1));
     }
 
     .btn-primary {
-        background: var(--accent-netflix-red);
+        background: var(--color-accent, #E50914);
         color: white;
         border: none;
     }
 
     .btn-primary:hover {
         background: #f40612;
+        transform: scale(1.02);
     }
 
     .btn-secondary {
@@ -194,7 +234,7 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
         width: 50px;
         height: 50px;
         border: 3px solid rgba(255,255,255,0.1);
-        border-top-color: var(--accent-netflix-red);
+        border-top-color: var(--color-accent, #E50914);
         border-radius: 50%;
         animation: spin 1s infinite linear;
     }
@@ -208,6 +248,9 @@ export class HomeComponent {
     discoverService = inject(DiscoverService);
 
     trendingContent = signal<ContentItem[]>([]);
+    recommendationsContent = signal<ContentItem[]>([]);
+    moviesContent = signal<ContentItem[]>([]);
+    tvShowsContent = signal<ContentItem[]>([]);
 
     readonly ChevronRight = ChevronRight;
 
@@ -223,21 +266,60 @@ export class HomeComponent {
     constructor() {
         effect(() => {
             if (this.authService.isAuthenticated()) {
-                this.loadTrending();
+                this.loadAllContent();
             }
         });
     }
 
-    // async ngOnInit() removed as it is replaced by effect
+    async loadAllContent() {
+        // Load all content in parallel
+        await Promise.all([
+            this.loadTrending(),
+            this.loadRecommendations(),
+            this.loadMovies(),
+            this.loadTvShows()
+        ]);
+    }
 
     async loadTrending() {
         try {
             const trending = await this.discoverService.getTrending('all');
-            // Take top 5 for carousel
             this.trendingContent.set(trending.slice(0, 5));
         } catch (error) {
             console.error('Failed to load trending content', error);
         }
+    }
+
+    async loadRecommendations() {
+        try {
+            const recommendations = await this.discoverService.getRecommendations();
+            this.recommendationsContent.set(recommendations.slice(0, 20));
+        } catch (error) {
+            console.error('Failed to load recommendations', error);
+        }
+    }
+
+    async loadMovies() {
+        try {
+            const movies = await this.discoverService.getTrending('movie');
+            this.moviesContent.set(movies.slice(0, 20));
+        } catch (error) {
+            console.error('Failed to load movies', error);
+        }
+    }
+
+    async loadTvShows() {
+        try {
+            const tvShows = await this.discoverService.getTrending('tv');
+            this.tvShowsContent.set(tvShows.slice(0, 20));
+        } catch (error) {
+            console.error('Failed to load TV shows', error);
+        }
+    }
+
+    navigateToVibe(vibe: string) {
+        // Navigate to discover page with vibe filter
+        window.location.href = `/discover?vibe=${vibe}`;
     }
 
     logout() {
