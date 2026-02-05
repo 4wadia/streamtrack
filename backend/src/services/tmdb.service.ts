@@ -267,6 +267,38 @@ class TMDBService {
     }
 
     /**
+     * Get genres list (movies + tv combined)
+     */
+    async getGenres(): Promise<{ id: number; name: string }[]> {
+        const cacheKey = 'tmdb_genres';
+        const cached = this.cache.get(cacheKey);
+        if (cached) return cached as { id: number; name: string }[];
+
+        try {
+            const [movieGenres, tvGenres] = await Promise.all([
+                this.fetch<{ genres: { id: number; name: string }[] }>('/genre/movie/list'),
+                this.fetch<{ genres: { id: number; name: string }[] }>('/genre/tv/list')
+            ]);
+
+            // Merge and deduplicate
+            const genreMap = new Map<number, string>();
+            movieGenres.genres.forEach(g => genreMap.set(g.id, g.name));
+            tvGenres.genres.forEach(g => genreMap.set(g.id, g.name));
+
+            const genres = Array.from(genreMap.entries()).map(([id, name]) => ({ id, name }));
+
+            // Sort alphabetically
+            genres.sort((a, b) => a.name.localeCompare(b.name));
+
+            this.cache.set(cacheKey, genres);
+            return genres;
+        } catch (error) {
+            console.error('Error fetching genres:', error);
+            return [];
+        }
+    }
+
+    /**
      * Normalize TMDB search result to our format
      */
     private normalizeResult(item: TMDBMovie | TMDBTVShow, forceType?: 'movie' | 'tv'): ContentItem {

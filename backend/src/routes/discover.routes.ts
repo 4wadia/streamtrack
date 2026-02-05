@@ -40,7 +40,47 @@ router.get('/vibes', async (req: AuthRequest, res: Response) => {
         }
     }
 
-    res.json({ vibes: predefinedVibes });
+    res.json({ vibes: predefinedVibes, customVibes: [] }); // Fallback
+});
+
+/**
+ * GET /api/discover/recommendations
+ * Get recommendations based on user's genres (onboarding)
+ */
+router.get('/recommendations', authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+        const { uid } = req.user!;
+        const user = await User.findOne({ firebaseUid: uid });
+
+        if (!user) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+
+        const recommendations = await vibeService.getOnboardingRecommendations(
+            user.genres || [],
+            user.services || []
+        );
+
+        res.json({ recommendations });
+    } catch (error) {
+        console.error('Get recommendations error:', error);
+        res.status(500).json({ error: 'Failed to get recommendations' });
+    }
+});
+
+/**
+ * GET /api/discover/genres
+ * Get list of all available genres from TMDB
+ */
+router.get('/genres', async (_req, res: Response) => {
+    try {
+        const genres = await tmdbService.getGenres();
+        res.json({ genres });
+    } catch (error) {
+        console.error('Get genres error:', error);
+        res.status(500).json({ error: 'Failed to get genres' });
+    }
 });
 
 /**

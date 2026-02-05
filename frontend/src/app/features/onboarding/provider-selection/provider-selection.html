@@ -1,0 +1,34 @@
+<div class="onboarding-page">
+    <div class="onboarding-content glass">
+        <div class="onboarding-header">
+            <h1 class="text-display">Which services do you have?</h1>
+            <p class="text-secondary">Select your streaming subscriptions to get personalized recommendations.</p>
+        </div>
+
+        <app-service-selection-grid [initialSelected]="initialServices()"
+            (selectionChange)="onSelectionChange($event)" />
+
+        <div class="onboarding-footer">
+            <p class="selection-hint">
+                @if (selectedServices().length === 0) {
+                Select at least one service to continue
+                } @else {
+                {{ selectedServices().length }} service{{ selectedServices().length > 1 ? 's' : '' }} selected
+                }
+            </p>
+
+            <button class="btn-primary btn-large" [disabled]="saving() || selectedServices().length === 0"
+                (click)="saveAndContinue()">
+                @if (saving()) {
+                <span class="spinner"></span> Saving...
+                } @else {
+                Next: Genres →
+                }
+            </button>
+
+            <button class="btn-skip" (click)="skipForNow()">
+                Skip selection
+            </button>
+        </div>
+    </div>
+</div>

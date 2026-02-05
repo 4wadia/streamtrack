@@ -238,6 +238,28 @@ class VibeService {
             reason: `${vibe?.emoji} ${reason} - ${vibe?.name.toLowerCase()} vibes`
         };
     }
+    /**
+     * Get recommendations based on genres (for onboarding)
+     */
+    async getOnboardingRecommendations(
+        genres: number[],
+        userServices: string[],
+        page = 1
+    ): Promise<ContentItem[]> {
+        // Convert user services to TMDB provider IDs
+        const providerIds = tmdbService.getProviderTmdbIds(userServices);
+
+        // Discover content
+        const results = await tmdbService.discover('movie', {
+            genres,
+            providers: providerIds.length > 0 ? providerIds : undefined,
+            minRating: 7.0, // Good quality baseline
+            page,
+            sortBy: 'popularity.desc'
+        });
+
+        return results;
+    }
 }
 
 export const vibeService = new VibeService();

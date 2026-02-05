@@ -7,10 +7,34 @@ export const routes: Routes = [
         loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
     },
     {
-        path: 'onboarding',
-        loadComponent: () => import('./features/onboarding/onboarding.component').then(m => m.OnboardingComponent),
-        canActivate: [authGuard]
+        path: 'welcome',
+        loadComponent: () => import('./features/welcome/welcome').then(m => m.Welcome)
     },
+    {
+        path: 'onboarding',
+        loadComponent: () => import('./features/onboarding/onboarding.component').then(m => m.Onboarding),
+        canActivate: [authGuard],
+        children: [
+            {
+                path: 'providers',
+                loadComponent: () => import('./features/onboarding/provider-selection/provider-selection').then(m => m.ProviderSelection)
+            },
+            {
+                path: 'genres',
+                loadComponent: () => import('./features/onboarding/genre-selection/genre-selection').then(m => m.GenreSelection)
+            },
+            {
+                path: 'preview',
+                loadComponent: () => import('./features/onboarding/personalized-preview/personalized-preview').then(m => m.PersonalizedPreview)
+            },
+            {
+                path: '',
+                redirectTo: 'providers',
+                pathMatch: 'full'
+            }
+        ]
+    },
+
     {
         path: 'discover',
         loadComponent: () => import('./features/discover/discover.component').then(m => m.DiscoverComponent),

@@ -73,42 +73,42 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 
 ---
 
-## Phase 9: Onboarding Flow (First-Time User Experience)
+### Phase 9: Onboarding Flow (First-Time User Experience) ✓
 
 > [!IMPORTANT]
-> **SKILL ENFORCEMENT**: Use `senior-frontend` skill's component generator for all new components. Run bundle analyzer after completing the phase.
+> **SKILL ENFORCEMENT**: Use `senior-frontend` and `frontend-design` skill's component generator for all new components. Run bundle analyzer after completing the phase.
 
-### 9.1: Welcome/Landing Page
-- [ ] Create `WelcomeComponent` for first-time visitors (check localStorage flag)
-- [ ] Hero section explaining StreamTrack value proposition:
+### 9.1: Welcome/Landing Page ✓
+- [x] Create `WelcomeComponent` for first-time visitors (check localStorage flag)
+- [x] Hero section explaining StreamTrack value proposition:
   - "Discover what to watch across all your streaming services"
   - "Personalized recommendations based on your vibe"
   - "Never lose track of what you're watching"
-- [ ] Primary "Get Started" CTA button → Leads to sign-up
-- [ ] Subtle "Already have an account? Log in" link at bottom
-- [ ] Set `isFirstVisit` flag in localStorage after viewing
+- [x] Primary "Get Started" CTA button → Leads to sign-up
+- [x] Subtle "Already have an account? Log in" link at bottom
+- [x] Set `isFirstVisit` flag in localStorage after viewing
 
-### 9.2: Provider Selection (Post Sign-up)
-- [ ] Redirect (smooth redirect, no flashing) first-time sign-ups to `/onboarding/providers`
-- [ ] Animated grid of streaming provider cards (Netflix, Prime, JioHotstar, Apple TV+, etc.)
-- [ ] Multi-select with visual feedback (glow/border on selection)
-- [ ] "If none/all selected → same behavior" logic
-- [ ] Skip option subtle but available
-- [ ] Next button → Genre selection
+### 9.2: Provider Selection (Post Sign-up) ✓
+- [x] Redirect (smooth redirect, no flashing) first-time sign-ups to `/onboarding/providers`
+- [x] Animated grid of streaming provider cards (Netflix, Prime, JioHotstar, Apple TV+, etc.)
+- [x] Multi-select with visual feedback (glow/border on selection)
+- [x] "If none/all selected → same behavior" logic
+- [x] Skip option subtle but available
+- [x] Next button → Genre selection
 
-### 9.3: Genre Preference Selection
-- [ ] Create `GenreSelectionComponent` at `/onboarding/genres`
-- [ ] Display genre cards with icons (Action, Comedy, Drama, Horror, etc.)
-- [ ] Allow multiple selection with visual feedback
-- [ ] "Skip" option clearly available
-- [ ] Save selections to user profile
+### 9.3: Genre Preference Selection ✓
+- [x] Create `GenreSelectionComponent` at `/onboarding/genres`
+- [x] Display genre cards with icons (Action, Comedy, Drama, Horror, etc.)
+- [x] Allow multiple selection with visual feedback
+- [x] "Skip" option clearly available
+- [x] Save selections to user profile
 
-### 9.4: Personalized Preview
-- [ ] If user selected genres → Show 4 preview cards (2 movies, 2 TV shows)
-- [ ] Use `GET /api/discover` with selected genres
-- [ ] Cards should be clickable with "Add to Watchlist" option
-- [ ] "Continue to Home" button
-- [ ] If user skipped genres → Go directly to Home
+### 9.4: Personalized Preview ✓
+- [x] If user selected genres → Show 4 preview cards (2 movies, 2 TV shows)
+- [x] Use `GET /api/discover` with selected genres
+- [x] Cards should be clickable with "Add to Watchlist" option
+- [x] "Continue to Home" button
+- [x] If user skipped genres → Go directly to Home
 
 ---
 

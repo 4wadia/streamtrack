@@ -26,6 +26,7 @@ export interface IUser extends Document {
     email: string;
     name?: string;
     services: string[];
+    genres: number[];
     watchlist: IWatchlistItem[];
     customVibes: ICustomVibe[];
     createdAt: Date;
@@ -58,6 +59,7 @@ const UserSchema = new Schema<IUser>({
     email: { type: String, required: true },
     name: String,
     services: { type: [String], default: [] },
+    genres: { type: [Number], default: [] },
     watchlist: { type: [WatchlistItemSchema], default: [] },
     customVibes: { type: [CustomVibeSchema], default: [], validate: [(v: ICustomVibe[]) => v.length <= 5, 'Maximum 5 custom vibes allowed'] }
 }, { timestamps: true });

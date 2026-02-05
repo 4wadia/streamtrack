@@ -1,0 +1,36 @@
+<div class="onboarding-page">
+    <div class="onboarding-content glass">
+        <div class="onboarding-header">
+            <h1 class="text-display">What's your vibe?</h1>
+            <p class="text-secondary">Pick at least 3 genres you enjoy.</p>
+        </div>
+
+        @if (loading()) {
+        <div class="loading-spinner"></div>
+        } @else {
+        <div class="genres-grid">
+            @for (genre of genres(); track genre.id) {
+            <button class="genre-card" [class.selected]="selectedGenres().includes(genre.id)"
+                (click)="toggleGenre(genre.id)">
+                <span class="genre-name">{{ genre.name }}</span>
+            </button>
+            }
+        </div>
+        }
+
+        <div class="onboarding-footer">
+            <p class="selection-hint">
+                {{ selectedGenres().length }} selected
+            </p>
+
+            <button class="btn-primary btn-large" [disabled]="saving() || selectedGenres().length < 3"
+                (click)="saveAndContinue()">
+                @if (saving()) {
+                <span class="spinner"></span> Saving...
+                } @else {
+                See Your Preview →
+                }
+            </button>
+        </div>
+    </div>
+</div>

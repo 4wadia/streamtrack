@@ -1,0 +1,101 @@
+/* Reusing core onboarding styles via global or component */
+/* We can duplicate basic layout styles or extract them later. Duplicating for now for isolation */
+
+.onboarding-page {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.onboarding-content {
+    max-width: 800px;
+    width: 100%;
+    padding: var(--space-2xl);
+    text-align: center;
+    animation: fadeIn 0.5s var(--ease-cinema);
+}
+
+.onboarding-header {
+    margin-bottom: var(--space-2xl);
+}
+
+.onboarding-header h1 {
+    margin-bottom: var(--space-md);
+    font-size: 2.5rem;
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+}
+
+.genres-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-2xl);
+}
+
+.genre-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.genre-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.genre-card.selected {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.onboarding-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-2xl);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-width: 200px;
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

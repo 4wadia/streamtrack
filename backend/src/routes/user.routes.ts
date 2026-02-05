@@ -93,4 +93,66 @@ router.get('/services/available', (_req, res: Response) => {
     res.json({ services: SUPPORTED_SERVICES });
 });
 
+/**
+ * GET /api/user/genres
+ * Returns the user's selected genres
+ */
+router.get('/genres', authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+        const { uid } = req.user!;
+        const user = await User.findOne({ firebaseUid: uid });
+
+        if (!user) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+
+        res.json({ genres: user.genres });
+    } catch (error) {
+        console.error('Error getting genres:', error);
+        res.status(500).json({ error: 'Failed to get genres' });
+    }
+});
+
+/**
+ * PUT /api/user/genres
+ * Updates the user's selected genres
+ * Body: { genres: number[] }
+ */
+router.put('/genres', authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+        const { uid } = req.user!;
+        const { genres } = req.body;
+
+        // Validate genres array
+        if (!Array.isArray(genres)) {
+            res.status(400).json({ error: 'Genres must be an array of numbers' });
+            return;
+        }
+
+        // Validate that all items are numbers
+        if (!genres.every(g => typeof g === 'number')) {
+            res.status(400).json({ error: 'All genres must be numbers' });
+            return;
+        }
+
+        const user = await User.findOneAndUpdate(
+            { firebaseUid: uid },
+            { genres },
+            { new: true }
+        );
+
+        if (!user) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+
+        console.log('✅ Genres updated for user:', user.email, genres);
+        res.json({ message: 'Genres updated', genres: user.genres });
+    } catch (error) {
+        console.error('Error updating genres:', error);
+        res.status(500).json({ error: 'Failed to update genres' });
+    }
+});
+
 export default router;

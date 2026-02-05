@@ -81,6 +81,28 @@ export class UserService {
         }
     }
 
+    /**
+     * Update user's processed genres
+     */
+    async updateUserGenres(genres: number[]): Promise<boolean> {
+        try {
+            const token = await this.authService.getIdToken();
+            if (!token) throw new Error('Not authenticated');
+
+            await firstValueFrom(
+                this.http.put(
+                    `${environment.apiUrl}/user/genres`,
+                    { genres },
+                    { headers: this.getAuthHeaders(token) }
+                )
+            );
+            return true;
+        } catch (error) {
+            console.error('Error updating user genres:', error);
+            return false;
+        }
+    }
+
     private getAuthHeaders(token: string): HttpHeaders {
         return new HttpHeaders({
             'Authorization': `Bearer ${token}`,

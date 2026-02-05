@@ -50,6 +50,25 @@ export class DiscoverService {
     private http = inject(HttpClient);
     private authService = inject(AuthService);
 
+    async getGenres(): Promise<{ id: number; name: string }[]> {
+        const response = await firstValueFrom(
+            this.http.get<{ genres: { id: number; name: string }[] }>(
+                `${environment.apiUrl}/discover/genres`
+            )
+        );
+        return response?.genres || [];
+    }
+
+    async getRecommendations(): Promise<ContentItem[]> {
+        const response = await firstValueFrom(
+            this.http.get<{ recommendations: ContentItem[] }>(
+                `${environment.apiUrl}/discover/recommendations`
+            )
+        );
+        return response?.recommendations || [];
+    }
+
+
     /**
      * Get all available vibes
      */
