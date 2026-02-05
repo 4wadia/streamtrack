@@ -189,10 +189,10 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 
 ## Phase 13: Navigation & Layout Polish
 
-### 13.1: Navbar Simplification
-- [ ] Left: StreamTrack logo only (home link)
-- [ ] Right: Search icon + Watchlist icon + Account avatar
-- [ ] Clean, minimal design
+### 13.1: Navbar Simplification ✓
+- [x] Left: StreamTrack logo only (home link)
+- [x] Right: Search icon + Watchlist icon + Account avatar
+- [x] Clean, minimal design
 
 ### 13.2: Tonight's Pick Floating Button
 - [ ] Squircle floating button in bottom-right corner
