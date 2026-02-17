@@ -65,7 +65,7 @@ describe("VibeService", () => {
             for (const vibe of vibes) {
                 expect(vibe.id).toBeDefined();
                 expect(vibe.name).toBeDefined();
-                expect(vibe.emoji).toBeDefined();
+                expect(vibe.icon).toBeDefined();
                 expect(vibe.color).toBeDefined();
                 expect(vibe.description).toBeDefined();
                 expect(vibe.genres).toBeInstanceOf(Array);
@@ -81,7 +81,7 @@ describe("VibeService", () => {
             expect(cozyVibe).toBeDefined();
             expect(cozyVibe?.id).toBe("cozy");
             expect(cozyVibe?.name).toBe("Cozy");
-            expect(cozyVibe?.emoji).toBe("🛋️");
+            expect(cozyVibe?.icon).toBe("coffee");
             expect(cozyVibe?.genres).toContain(GENRE_IDS.ROMANCE);
             expect(cozyVibe?.genres).toContain(GENRE_IDS.COMEDY);
         });

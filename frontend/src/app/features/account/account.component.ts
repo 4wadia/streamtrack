@@ -7,17 +7,17 @@ import { UserService, StreamingService } from '../../core/services/user.service'
 import { WatchlistService } from '../../core/services/watchlist.service';
 import { fadeAnimation, staggerAnimation } from '../../shared/animations/fade.animation';
 import { LucideAngularModule, User as UserIcon, Mail, Calendar, Film, Tv, LogOut, Check, Loader2, ListVideo } from 'lucide-angular';
+import { ProviderIconComponent, PROVIDER_DATA } from '../../shared/components/provider-icon/provider-icon.component';
 
 interface ProviderDisplay extends StreamingService {
-    color: string;
-    icon: string;
+  color: string;
 }
 
 @Component({
-    selector: 'app-account',
-    standalone: true,
-    imports: [CommonModule, NavbarComponent, LucideAngularModule, RouterLink],
-    template: `
+  selector: 'app-account',
+  standalone: true,
+  imports: [CommonModule, NavbarComponent, LucideAngularModule, RouterLink, ProviderIconComponent],
+  template: `
     <div class="account-page" @fade>
       <app-navbar />
       
@@ -85,7 +85,9 @@ interface ProviderDisplay extends StreamingService {
                 [style.--provider-color]="provider.color"
                 (click)="toggleProvider(provider.id)"
               >
-                <div class="provider-icon">{{ provider.icon }}</div>
+                <div class="provider-icon">
+                    <app-provider-icon [providerId]="provider.id" [size]="32" />
+                </div>
                 <span class="provider-name">{{ provider.name }}</span>
                 @if (selectedProviders().includes(provider.id)) {
                   <div class="check-badge">
@@ -118,8 +120,8 @@ interface ProviderDisplay extends StreamingService {
       </main>
     </div>
   `,
-    animations: [fadeAnimation, staggerAnimation],
-    styles: [`
+  animations: [fadeAnimation, staggerAnimation],
+  styles: [`
     .account-page {
       min-height: 100vh;
       background-color: var(--bg-cinema-black);
@@ -409,107 +411,106 @@ interface ProviderDisplay extends StreamingService {
   `]
 })
 export class AccountComponent implements OnInit {
-    private router = inject(Router);
-    private authService = inject(AuthService);
-    private userService = inject(UserService);
-    private watchlistService = inject(WatchlistService);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private userService = inject(UserService);
+  private watchlistService = inject(WatchlistService);
 
-    // Icons
-    readonly UserIcon = UserIcon;
-    readonly Mail = Mail;
-    readonly Calendar = Calendar;
-    readonly Film = Film;
-    readonly Tv = Tv;
-    readonly LogOut = LogOut;
-    readonly Check = Check;
-    readonly Loader2 = Loader2;
-    readonly ListVideo = ListVideo;
+  // Icons
+  readonly UserIcon = UserIcon;
+  readonly Mail = Mail;
+  readonly Calendar = Calendar;
+  readonly Film = Film;
+  readonly Tv = Tv;
+  readonly LogOut = LogOut;
+  readonly Check = Check;
+  readonly Loader2 = Loader2;
+  readonly ListVideo = ListVideo;
 
-    // State
-    user = this.authService.user;
-    memberSince = '';
-    providers = signal<ProviderDisplay[]>([]);
-    selectedProviders = signal<string[]>([]);
-    originalProviders = signal<string[]>([]);
-    saving = signal(false);
-    saveSuccess = signal(false);
+  // State
+  user = this.authService.user;
+  memberSince = '';
+  providers = signal<ProviderDisplay[]>([]);
+  selectedProviders = signal<string[]>([]);
+  originalProviders = signal<string[]>([]);
+  saving = signal(false);
+  saveSuccess = signal(false);
 
-    // Provider brand colors
-    private providerColors: Record<string, { color: string; icon: string }> = {
-        'netflix': { color: '#E50914', icon: '🔴' },
-        'prime': { color: '#00A8E1', icon: '📦' },
-        'jiohotstar': { color: '#1F80E0', icon: '🌟' },
-        'apple': { color: '#A2AAAD', icon: '🍎' },
-        'hbo': { color: '#5822B4', icon: '🟣' },
-        'hulu': { color: '#1CE783', icon: '💚' },
-        'paramount': { color: '#0064FF', icon: '⭐' },
-        'sonyliv': { color: '#0A8C6A', icon: '📺' }
-    };
+  // Provider brand colors
+  private providerColors: Record<string, string> = {
+    'netflix': '#E50914',
+    'prime': '#00A8E1',
+    'jiohotstar': '#1F80E0',
+    'apple': '#A2AAAD',
+    'hbo': '#5822B4',
+    'hulu': '#1CE783',
+    'paramount': '#0064FF',
+    'sonyliv': '#0A8C6A'
+  };
 
-    // Computed signals for watchlist stats
-    watchlistCount = computed(() => this.watchlistService.watchlist().length);
-    movieCount = computed(() =>
-        this.watchlistService.watchlist().filter(i => i.type === 'movie').length
-    );
-    tvCount = computed(() =>
-        this.watchlistService.watchlist().filter(i => i.type === 'tv').length
-    );
-    hasChanges = computed(() => {
-        const current = [...this.selectedProviders()].sort().join(',');
-        const original = [...this.originalProviders()].sort().join(',');
-        return current !== original;
-    });
+  // Computed signals for watchlist stats
+  watchlistCount = computed(() => this.watchlistService.watchlist().length);
+  movieCount = computed(() =>
+    this.watchlistService.watchlist().filter(i => i.type === 'movie').length
+  );
+  tvCount = computed(() =>
+    this.watchlistService.watchlist().filter(i => i.type === 'tv').length
+  );
+  hasChanges = computed(() => {
+    const current = [...this.selectedProviders()].sort().join(',');
+    const original = [...this.originalProviders()].sort().join(',');
+    return current !== original;
+  });
 
-    async ngOnInit() {
-        // Load watchlist for stats
-        this.watchlistService.loadWatchlist().subscribe();
+  async ngOnInit() {
+    // Load watchlist for stats
+    this.watchlistService.loadWatchlist().subscribe();
 
-        // Load providers
-        const availableServices = await this.userService.getAvailableServices();
-        const providersWithColors: ProviderDisplay[] = availableServices.map(s => ({
-            ...s,
-            color: this.providerColors[s.id]?.color || '#888888',
-            icon: this.providerColors[s.id]?.icon || '📺'
-        }));
-        this.providers.set(providersWithColors);
+    // Load providers
+    const availableServices = await this.userService.getAvailableServices();
+    const providersWithColors: ProviderDisplay[] = availableServices.map(s => ({
+      ...s,
+      color: this.providerColors[s.id] || '#888888'
+    }));
+    this.providers.set(providersWithColors);
 
-        // Load user's selected providers
-        const userServices = await this.userService.getUserServices();
-        this.selectedProviders.set(userServices);
-        this.originalProviders.set(userServices);
+    // Load user's selected providers
+    const userServices = await this.userService.getUserServices();
+    this.selectedProviders.set(userServices);
+    this.originalProviders.set(userServices);
+  }
+
+  toggleProvider(providerId: string) {
+    const current = this.selectedProviders();
+    const updated = current.includes(providerId)
+      ? current.filter(id => id !== providerId)
+      : [...current, providerId];
+    this.selectedProviders.set(updated);
+
+    // Reset success state on change
+    if (this.saveSuccess()) {
+      this.saveSuccess.set(false);
     }
+  }
 
-    toggleProvider(providerId: string) {
-        const current = this.selectedProviders();
-        const updated = current.includes(providerId)
-            ? current.filter(id => id !== providerId)
-            : [...current, providerId];
-        this.selectedProviders.set(updated);
+  async saveProviders() {
+    if (!this.hasChanges() || this.saving()) return;
 
-        // Reset success state on change
-        if (this.saveSuccess()) {
-            this.saveSuccess.set(false);
-        }
+    this.saving.set(true);
+    const success = await this.userService.updateUserServices(this.selectedProviders());
+    this.saving.set(false);
+
+    if (success) {
+      this.originalProviders.set([...this.selectedProviders()]);
+      this.saveSuccess.set(true);
+
+      // Reset success indicator after 2 seconds
+      setTimeout(() => this.saveSuccess.set(false), 2000);
     }
+  }
 
-    async saveProviders() {
-        if (!this.hasChanges() || this.saving()) return;
-
-        this.saving.set(true);
-        const success = await this.userService.updateUserServices(this.selectedProviders());
-        this.saving.set(false);
-
-        if (success) {
-            this.originalProviders.set([...this.selectedProviders()]);
-            this.saveSuccess.set(true);
-
-            // Reset success indicator after 2 seconds
-            setTimeout(() => this.saveSuccess.set(false), 2000);
-        }
-    }
-
-    async logout() {
-        await this.authService.logout();
-        this.router.navigate(['/login']);
-    }
+  async logout() {
+    await this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 }

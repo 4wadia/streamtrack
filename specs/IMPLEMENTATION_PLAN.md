@@ -204,20 +204,20 @@ Build StreamTrack - a personalized streaming discovery platform with vibe-based 
 
 ## Phase 14: Auth Pages Polish
 
-### 14.1: Login Page
-- [ ] Clean, centered card design (shadcn/better-auth inspired)
-- [ ] Email + Password fields with validation
-- [ ] "Sign in" primary button
-- [ ] "Forgot password?" link
-- [ ] Social login options (Google)
-- [ ] "Don't have an account? Sign up" link
+### 14.1: Login Page ✓
+- [x] Clean, centered card design (shadcn/better-auth inspired)
+- [x] Email + Password fields with validation
+- [x] "Sign in" primary button
+- [x] "Forgot password?" link
+- [x] Social login options (Google)
+- [x] "Don't have an account? Sign up" link
 
-### 14.2: Register Page
-- [ ] Matching design to login
-- [ ] Name, Email, Password, Confirm Password
-- [ ] Strong password indicator
-- [ ] Terms & conditions checkbox
-- [ ] "Already have an account? Log in" link
+### 14.2: Register Page ✓
+- [x] Matching design to login
+- [x] Name, Email, Password, Confirm Password
+- [x] Strong password indicator
+- [x] Terms & conditions checkbox
+- [x] "Already have an account? Log in" link
 
 ---
 

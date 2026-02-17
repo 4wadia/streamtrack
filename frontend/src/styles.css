@@ -2,32 +2,43 @@
 @import "tailwindcss";
 
 :root {
-  /* Core Palette */
+  /* ── Core Backgrounds ── */
   --bg-cinema-black: #141414;
-  /* Netflix background */
   --bg-cinema-dark: #181818;
   --bg-cinema-elevated: #262626;
 
-  /* Glass & Overlays */
+  /* Aliases (used across components) */
+  --bg-primary: var(--bg-cinema-black);
+  --bg-secondary: var(--bg-cinema-dark);
+  --bg-elevated: var(--bg-cinema-elevated);
+  --bg-card: rgba(24, 24, 24, 0.85);
+
+  /* ── Glass & Overlays ── */
   --glass-base: rgba(20, 20, 20, 0.85);
   --glass-border: rgba(255, 255, 255, 0.15);
   --glass-highlight: rgba(255, 255, 255, 0.1);
 
-  /* Accents */
+  /* ── Text Colors ── */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #666666;
+
+  /* ── Accent Colors ── */
+  --color-accent: #E50914;
+  --color-accent-hover: #B20710;
+  --accent-primary: #E50914;
+  --accent-hover: #B20710;
+  --accent-error: #ef4444;
+  --accent-success: #22c55e;
   --accent-netflix-red: #E50914;
-  /* The Red */
   --accent-neon-blue: #46d369;
-  /* Good match/High confidence green */
-  --accent-electric-purple: #E50914;
-  /* Replacing purple with red for brand consistency */
-  --accent-hot-pink: #E50914;
   --accent-signal-amber: #eebc1d;
 
-  /* Typography */
+  /* ── Typography ── */
   --font-display: 'Roboto', sans-serif;
   --font-body: 'Roboto', sans-serif;
 
-  /* Spacing */
+  /* ── Spacing ── */
   --space-2xs: 0.25rem;
   --space-xs: 0.5rem;
   --space-sm: 0.75rem;
@@ -37,7 +48,21 @@
   --space-2xl: 3rem;
   --space-3xl: 4.5rem;
 
-  /* Transitions */
+  /* ── Border Radii ── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* ── Transitions ── */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
   --ease-cinema: cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 

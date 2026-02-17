@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
 export interface Vibe {
     id: string;
     name: string;
-    emoji: string;
+    icon: string;
     color: string;
     description: string;
 }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DiscoverService, ContentItem } from '../../../core/services/discover.service';
 import { WatchlistService } from '../../../core/services/watchlist.service';
-import { LucideAngularModule, Moon, X, Play, Plus, RefreshCw } from 'lucide-angular';
+import { LucideAngularModule, Moon, X, Play, Plus, RefreshCw, Star } from 'lucide-angular';
 
 @Component({
     selector: 'app-tonights-pick-fab',
@@ -43,13 +43,13 @@ import { LucideAngularModule, Moon, X, Play, Plus, RefreshCw } from 'lucide-angu
 
                         <!-- Content -->
                         <div class="content">
-                            <div class="badge">🌙 Tonight's Pick</div>
+                            <div class="badge"><lucide-icon [name]="Moon" [size]="14"></lucide-icon> Tonight's Pick</div>
                             <h2 class="title">{{ pick()!.title }}</h2>
                             <p class="reason">{{ reason() }}</p>
                             <p class="overview">{{ pick()!.overview | slice:0:200 }}{{ pick()!.overview.length > 200 ? '...' : '' }}</p>
                             
                             <div class="meta">
-                                <span class="rating">⭐ {{ pick()!.rating.toFixed(1) }}</span>
+                                <span class="rating"><lucide-icon [name]="Star" [size]="14"></lucide-icon> {{ pick()!.rating.toFixed(1) }}</span>
                                 <span class="type">{{ pick()!.type === 'movie' ? 'Movie' : 'TV Show' }}</span>
                             </div>
 
@@ -349,6 +349,7 @@ export class TonightsPickFabComponent implements OnInit {
     readonly Play = Play;
     readonly Plus = Plus;
     readonly RefreshCw = RefreshCw;
+    readonly Star = Star;
 
     isOpen = signal(false);
     loading = signal(true);

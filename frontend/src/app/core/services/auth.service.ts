@@ -10,6 +10,9 @@ import {
     createUserWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
+    GoogleAuthProvider,
+    signInWithPopup,
+    sendPasswordResetEmail,
     User as FirebaseUser,
     Auth
 } from 'firebase/auth';
@@ -76,6 +79,48 @@ export class AuthService {
             await this.syncUserWithBackend();
         } catch (error: any) {
             console.error('Login error:', error);
+            this._error.set(this.getErrorMessage(error.code));
+            throw error;
+        } finally {
+            this._loading.set(false);
+        }
+    }
+
+    /**
+     * Sign in with Google
+     */
+    async loginWithGoogle(): Promise<void> {
+        this._loading.set(true);
+        this._error.set(null);
+
+        try {
+            const provider = new GoogleAuthProvider();
+            const credential = await signInWithPopup(this.auth, provider);
+            console.log('Google login successful:', credential.user.email);
+
+            // Sync with backend
+            await this.syncUserWithBackend();
+        } catch (error: any) {
+            console.error('Google login error:', error);
+            this._error.set(this.getErrorMessage(error.code));
+            throw error;
+        } finally {
+            this._loading.set(false);
+        }
+    }
+
+    /**
+     * Send password reset email
+     */
+    async sendPasswordResetEmail(email: string): Promise<void> {
+        this._loading.set(true);
+        this._error.set(null);
+
+        try {
+            await sendPasswordResetEmail(this.auth, email);
+            console.log('Password reset email sent to:', email);
+        } catch (error: any) {
+            console.error('Password reset error:', error);
             this._error.set(this.getErrorMessage(error.code));
             throw error;
         } finally {
@@ -176,7 +221,9 @@ export class AuthService {
             'auth/user-not-found': 'No account found with this email.',
             'auth/wrong-password': 'Incorrect password.',
             'auth/too-many-requests': 'Too many attempts. Please try again later.',
-            'auth/network-request-failed': 'Network error. Please check your connection.'
+            'auth/network-request-failed': 'Network error. Please check your connection.',
+            'auth/popup-closed-by-user': 'Sign in was cancelled.',
+            'auth/cancelled-popup-request': 'Sign in was cancelled.'
         };
         return messages[code] || 'An error occurred. Please try again.';
     }

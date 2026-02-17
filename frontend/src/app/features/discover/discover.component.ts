@@ -8,6 +8,7 @@ import { ContentCardComponent } from '../../shared/components/content-card/conte
 import { TonightsPickComponent } from '../../shared/components/tonights-pick/tonights-pick.component';
 import { fadeAnimation, staggerAnimation } from '../../shared/animations/fade.animation';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
+import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Sparkles } from 'lucide-angular';
 
 @Component({
     selector: 'app-discover',
@@ -18,7 +19,8 @@ import { NavbarComponent } from '../../shared/components/navbar/navbar.component
         VibePillBarComponent,
         ContentCardComponent,
         TonightsPickComponent,
-        NavbarComponent
+        NavbarComponent,
+        LucideAngularModule
     ],
     template: `
         <div class="discover-container" @fade>
@@ -48,7 +50,8 @@ import { NavbarComponent } from '../../shared/components/navbar/navbar.component
                     @if (selectedVibe()) {
                         <div class="section-header" @fade>
                             <h2 class="section-title">
-                                {{ getSelectedVibeEmoji() }} {{ getSelectedVibeName() }} picks
+                                <lucide-icon [name]="getSelectedVibeIcon()" [size]="20"></lucide-icon>
+                                {{ getSelectedVibeName() }} picks
                             </h2>
                             <div class="type-toggle">
                                 <button 
@@ -232,9 +235,14 @@ export class DiscoverComponent implements OnInit {
         }
     }
 
-    getSelectedVibeEmoji(): string {
+    private vibeIconMap: Record<string, any> = {
+        'coffee': Coffee, 'zap': Zap, 'gamepad-2': Gamepad2,
+        'lightbulb': Lightbulb, 'moon': Moon, 'smile': Smile, 'sparkles': Sparkles
+    };
+
+    getSelectedVibeIcon(): any {
         const vibe = this.vibes().find(v => v.id === this.selectedVibe());
-        return vibe?.emoji || '';
+        return this.vibeIconMap[vibe?.icon || ''] || Sparkles;
     }
 
     getSelectedVibeName(): string {

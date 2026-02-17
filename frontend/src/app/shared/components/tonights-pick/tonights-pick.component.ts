@@ -2,6 +2,7 @@ import { Component, Input, inject } from '@angular/core';
 import { WatchlistService } from '../../../core/services/watchlist.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 
 export interface TonightsPickData {
     id: string;
@@ -17,19 +18,19 @@ export interface TonightsPickData {
 @Component({
     selector: 'app-tonights-pick',
     standalone: true,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule, RouterLink, LucideAngularModule],
     template: `
         @if (pick) {
             <div class="tonights-pick glass" [routerLink]="['/content', pick.type, pick.tmdbId]">
                 <div class="backdrop" [style.background-image]="getBackdropUrl()"></div>
                 <div class="content">
-                    <div class="badge">🌙 Tonight's Pick</div>
+                    <div class="badge"><lucide-icon name="moon" [size]="14"></lucide-icon> Tonight's Pick</div>
                     <h2 class="title">{{ pick.title }}</h2>
                     <p class="reason">{{ reason }}</p>
                     <p class="overview">{{ pick.overview | slice:0:150 }}{{ pick.overview.length > 150 ? '...' : '' }}</p>
                     <div class="actions">
                         <button class="btn-watch">
-                            ▶ Watch Now
+                            <lucide-icon name="play" [size]="14"></lucide-icon> Watch Now
                         </button>
                         <button class="btn-add" (click)="onAddToWatchlist($event)">
                             + Watchlist

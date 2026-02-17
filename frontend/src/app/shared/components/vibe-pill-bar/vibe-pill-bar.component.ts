@@ -5,7 +5,7 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Spa
 export interface Vibe {
     id: string;
     name: string;
-    emoji: string;
+    icon: string;
     color: string;
     description: string;
 }

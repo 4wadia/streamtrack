@@ -26,7 +26,7 @@ router.get('/vibes', async (req: AuthRequest, res: Response) => {
                 const customVibes = (user?.customVibes || []).map(cv => ({
                     id: `custom-${cv.id}`,
                     name: cv.name,
-                    emoji: '✨',
+                    icon: 'sparkles',
                     color: cv.color || '#6366f1',
                     description: `Custom vibe: ${cv.name}`,
                     genres: cv.genres,

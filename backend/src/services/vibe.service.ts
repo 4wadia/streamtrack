@@ -26,7 +26,7 @@ export const GENRE_IDS = {
 export interface VibeDefinition {
     id: string;
     name: string;
-    emoji: string;
+    icon: string;
     color: string;
     description: string;
     genres: number[];
@@ -40,7 +40,7 @@ export const VIBE_MAP: Record<string, VibeDefinition> = {
     cozy: {
         id: 'cozy',
         name: 'Cozy',
-        emoji: '🛋️',
+        icon: 'coffee',
         color: '#f472b6',
         description: 'Warm and comforting content for relaxing',
         genres: [GENRE_IDS.ROMANCE, GENRE_IDS.COMEDY, GENRE_IDS.ANIMATION, GENRE_IDS.FAMILY],
@@ -50,7 +50,7 @@ export const VIBE_MAP: Record<string, VibeDefinition> = {
     intense: {
         id: 'intense',
         name: 'Intense',
-        emoji: '⚡',
+        icon: 'zap',
         color: '#ef4444',
         description: 'Edge-of-your-seat thrills and action',
         genres: [GENRE_IDS.THRILLER, GENRE_IDS.ACTION, GENRE_IDS.CRIME],
@@ -59,7 +59,7 @@ export const VIBE_MAP: Record<string, VibeDefinition> = {
     mindless: {
         id: 'mindless',
         name: 'Mindless',
-        emoji: '🍿',
+        icon: 'gamepad-2',
         color: '#fbbf24',
         description: 'Easy watching, no brainpower required',
         genres: [GENRE_IDS.COMEDY, GENRE_IDS.ANIMATION],
@@ -69,7 +69,7 @@ export const VIBE_MAP: Record<string, VibeDefinition> = {
     thoughtful: {
         id: 'thoughtful',
         name: 'Thoughtful',
-        emoji: '🧠',
+        icon: 'lightbulb',
         color: '#3b82f6',
         description: 'Stimulating content that makes you think',
         genres: [GENRE_IDS.DOCUMENTARY, GENRE_IDS.DRAMA, GENRE_IDS.MYSTERY],
@@ -78,7 +78,7 @@ export const VIBE_MAP: Record<string, VibeDefinition> = {
     dark: {
         id: 'dark',
         name: 'Dark',
-        emoji: '🌙',
+        icon: 'moon',
         color: '#8b5cf6',
         description: 'Moody, mysterious, and atmospheric',
         genres: [GENRE_IDS.HORROR, GENRE_IDS.THRILLER, GENRE_IDS.MYSTERY],
@@ -87,7 +87,7 @@ export const VIBE_MAP: Record<string, VibeDefinition> = {
     funny: {
         id: 'funny',
         name: 'Funny',
-        emoji: '😂',
+        icon: 'smile',
         color: '#f97316',
         description: 'Guaranteed laughs and good times',
         genres: [GENRE_IDS.COMEDY],
@@ -167,7 +167,7 @@ class VibeService {
         const vibeDefinition: VibeDefinition = {
             id: `custom-${customVibe.id}`,
             name: customVibe.name,
-            emoji: '✨', // Default emoji for custom vibes
+            icon: 'sparkles',
             color: customVibe.color || '#6366f1', // Default indigo
             description: `Custom vibe: ${customVibe.name}`,
             genres: customVibe.genres,
@@ -235,7 +235,7 @@ class VibeService {
 
         return {
             pick,
-            reason: `${vibe?.emoji} ${reason} - ${vibe?.name.toLowerCase()} vibes`
+            reason: `${reason} — ${vibe?.name.toLowerCase()} vibes`
         };
     }
     /**

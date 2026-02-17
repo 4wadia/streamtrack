@@ -1,11 +1,13 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserService, StreamingService } from '../../../core/services/user.service';
+import { ProviderIconComponent } from '../provider-icon/provider-icon.component';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
     selector: 'app-service-selection-grid',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, ProviderIconComponent, LucideAngularModule],
     template: `
         <div class="service-grid">
             @for (service of services(); track service.id) {
@@ -14,10 +16,14 @@ import { UserService, StreamingService } from '../../../core/services/user.servi
                     [class.selected]="selectedServices().includes(service.id)"
                     (click)="toggleService(service.id)"
                 >
-                    <div class="service-icon">{{ getServiceEmoji(service.id) }}</div>
+                    <div class="service-icon">
+                        <app-provider-icon [providerId]="service.id" [size]="36" />
+                    </div>
                     <span class="service-name">{{ service.name }}</span>
                     @if (selectedServices().includes(service.id)) {
-                        <div class="check-indicator">✓</div>
+                        <div class="check-indicator">
+                            <lucide-icon name="check" [size]="14"></lucide-icon>
+                        </div>
                     }
                 </button>
             }
@@ -57,8 +63,10 @@ import { UserService, StreamingService } from '../../../core/services/user.servi
         }
 
         .service-icon {
-            font-size: 2.5rem;
             margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .service-name {
@@ -80,8 +88,6 @@ import { UserService, StreamingService } from '../../../core/services/user.servi
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
-            font-weight: bold;
         }
     `]
 })
@@ -94,29 +100,13 @@ export class ServiceSelectionGridComponent implements OnInit {
     services = signal<StreamingService[]>([]);
     selectedServices = signal<string[]>([]);
 
-    private serviceEmojis: Record<string, string> = {
-        'netflix': '🔴',
-        'prime': '📦',
-        'jiohotstar': '🌟',
-        'hbo': '🟣',
-        'hulu': '💚',
-        'apple': '🍎',
-        'paramount': '⭐'
-    };
-
     async ngOnInit() {
-        // Load available services
         const services = await this.userService.getAvailableServices();
         this.services.set(services);
 
-        // Set initial selection
         if (this.initialSelected.length > 0) {
             this.selectedServices.set([...this.initialSelected]);
         }
-    }
-
-    getServiceEmoji(id: string): string {
-        return this.serviceEmojis[id] || '📺';
     }
 
     toggleService(serviceId: string) {
