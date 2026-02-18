@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
+import { provideRouter } from '@angular/router';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { WatchlistComponent } from './watchlist.component';
 import { WatchlistService, WatchlistItem } from '../../core/services/watchlist.service';
 import { of } from 'rxjs';
@@ -42,7 +44,9 @@ describe('WatchlistComponent', () => {
         await TestBed.configureTestingModule({
             imports: [WatchlistComponent],
             providers: [
-                { provide: WatchlistService, useValue: mockWatchlistService }
+                { provide: WatchlistService, useValue: mockWatchlistService },
+                provideRouter([]),
+                provideAnimations()
             ]
         }).compileComponents();
 
