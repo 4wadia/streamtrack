@@ -64,6 +64,12 @@
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s ease;
   --ease-cinema: cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  /* ── Animation Durations ── */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-carousel: 1000ms;
 }
 
 /* Global Reset & Base */

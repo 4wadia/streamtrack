@@ -37,8 +37,8 @@ export const routes: Routes = [
 
     {
         path: 'discover',
-        loadComponent: () => import('./features/discover/discover.component').then(m => m.DiscoverComponent),
-        canActivate: [authGuard]
+        redirectTo: '/',
+        pathMatch: 'full'
     },
     {
         path: 'watchlist',
