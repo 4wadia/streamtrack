@@ -1,15 +1,15 @@
 import { Component, Input, signal, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+
 import { ContentItem } from '../../../core/services/discover.service';
 import { WatchlistService } from '../../../core/services/watchlist.service';
-import { WatchlistButtonComponent } from '../watchlist-button/watchlist-button.component';
+
 import { LucideAngularModule, Play, Plus } from 'lucide-angular';
 
 @Component({
     selector: 'app-hero-carousel',
     standalone: true,
-    imports: [CommonModule, RouterLink, LucideAngularModule, WatchlistButtonComponent],
+    imports: [CommonModule, LucideAngularModule],
     template: `
     <div class="carousel-container">
         @for (item of items; track item.id; let i = $index) {
@@ -55,6 +55,7 @@ import { LucideAngularModule, Play, Plus } from 'lucide-angular';
                     class="indicator" 
                     [class.active]="currentIndex() === i"
                     (click)="setIndex(i)"
+                    [attr.aria-label]="'Slide ' + (i + 1)"
                 ></button>
             }
         </div>
@@ -246,7 +247,7 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
     private watchlistService = inject(WatchlistService);
 
     currentIndex = signal(0);
-    private intervalId: any;
+    private intervalId: ReturnType<typeof setInterval> | undefined;
     private addedItems = signal<Set<string>>(new Set());
 
     readonly Play = Play;
@@ -283,7 +284,7 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
         this.currentIndex.update(i => (i + 1) % this.items.length);
     }
 
-    truncate(text: string, length: number = 150): string {
+    truncate(text: string, length = 150): string {
         if (!text) return '';
         if (text.length <= length) return text;
         return text.substring(0, length) + '...';

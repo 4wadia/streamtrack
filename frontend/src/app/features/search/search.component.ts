@@ -407,7 +407,7 @@ export class SearchComponent implements OnInit {
 
             // Check if top result is in watchlist
             if (isReset && newResults.length > 0) {
-                this.checkFeaturedWatchlistStatus(newResults[0].id);
+                this.checkFeaturedWatchlistStatus();
             }
 
         } catch (err) {
@@ -438,7 +438,7 @@ export class SearchComponent implements OnInit {
     // For now, let's assume we can check against the loaded watchlist if available, 
     // OR we just default to false and let the user add it. 
     // Ideally, WatchlistService should expose a signal `watchlistItems` we can check against.
-    checkFeaturedWatchlistStatus(contentId: string) {
+    checkFeaturedWatchlistStatus() {
         // Implementation depends on WatchlistService capabilities. 
         // For now, simpler to not implement check on load without more context, default false.
         // Or if WatchlistService has a synced signal:
@@ -458,7 +458,7 @@ export class SearchComponent implements OnInit {
             posterPath: content.posterPath || undefined,
             status: 'want'
         }).subscribe({
-            next: () => { },
+
             error: (err: unknown) => {
                 console.error('Failed to add to watchlist', err);
                 this.isFeaturedAdded.set(false);

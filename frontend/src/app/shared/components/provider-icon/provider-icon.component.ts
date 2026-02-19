@@ -46,7 +46,7 @@ export const PROVIDER_DATA: Record<string, ProviderInfo> = {
 })
 export class ProviderIconComponent {
     @Input({ required: true }) providerId!: string;
-    @Input() size: number = 24;
+    @Input() size = 24;
 
     getProviderName(): string {
         return PROVIDER_DATA[this.providerId]?.name || this.providerId;

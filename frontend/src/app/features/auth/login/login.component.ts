@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { LucideAngularModule, Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-angular';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
     selector: 'app-login',
@@ -484,7 +484,7 @@ export class LoginComponent {
         try {
             await this.authService.login(this.email, this.password);
             this.router.navigate(['/']);
-        } catch (error) {
+        } catch {
             // Error is handled by AuthService
         } finally {
             this.loading.set(false);
@@ -509,7 +509,7 @@ export class LoginComponent {
             // Optionally show success message or switch back to login
             alert('Password reset link sent to your email.');
             this.toggleResetMode();
-        } catch (error) {
+        } catch {
             // Error handled by service
         } finally {
             this.loading.set(false);
@@ -521,7 +521,7 @@ export class LoginComponent {
         try {
             await this.authService.loginWithGoogle();
             this.router.navigate(['/']);
-        } catch (error) {
+        } catch {
             // Error handled by service
         } finally {
             this.loading.set(false);

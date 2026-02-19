@@ -77,9 +77,9 @@ export class AuthService {
 
             // Sync with backend
             await this.syncUserWithBackend();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Login error:', error);
-            this._error.set(this.getErrorMessage(error.code));
+            this._error.set(this.getErrorMessage((error as { code: string }).code));
             throw error;
         } finally {
             this._loading.set(false);
@@ -100,9 +100,9 @@ export class AuthService {
 
             // Sync with backend
             await this.syncUserWithBackend();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Google login error:', error);
-            this._error.set(this.getErrorMessage(error.code));
+            this._error.set(this.getErrorMessage((error as { code: string }).code));
             throw error;
         } finally {
             this._loading.set(false);
@@ -119,9 +119,9 @@ export class AuthService {
         try {
             await sendPasswordResetEmail(this.auth, email);
             console.log('Password reset email sent to:', email);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Password reset error:', error);
-            this._error.set(this.getErrorMessage(error.code));
+            this._error.set(this.getErrorMessage((error as { code: string }).code));
             throw error;
         } finally {
             this._loading.set(false);
@@ -150,9 +150,9 @@ export class AuthService {
             if (response?.user) {
                 this._user.set(response.user);
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Registration error:', error);
-            this._error.set(this.getErrorMessage(error.code));
+            this._error.set(this.getErrorMessage((error as { code: string }).code));
             throw error;
         } finally {
             this._loading.set(false);

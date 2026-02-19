@@ -1,5 +1,5 @@
 import { Injectable, computed, signal, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { map, Observable, tap, catchError, of } from 'rxjs';
 
@@ -38,7 +38,7 @@ export class WatchlistService {
         this.watchlistSignal().filter(item => item.status === 'watched')
     );
 
-    constructor() { }
+
 
     /**
      * Fetch all watchlist items

@@ -2,12 +2,12 @@ import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
-import { AuthService, User } from '../../core/services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { UserService, StreamingService } from '../../core/services/user.service';
 import { WatchlistService } from '../../core/services/watchlist.service';
 import { fadeAnimation, staggerAnimation } from '../../shared/animations/fade.animation';
 import { LucideAngularModule, User as UserIcon, Mail, Calendar, Film, Tv, LogOut, Check, Loader2, ListVideo } from 'lucide-angular';
-import { ProviderIconComponent, PROVIDER_DATA } from '../../shared/components/provider-icon/provider-icon.component';
+import { ProviderIconComponent } from '../../shared/components/provider-icon/provider-icon.component';
 
 interface ProviderDisplay extends StreamingService {
   color: string;
@@ -37,10 +37,12 @@ interface ProviderDisplay extends StreamingService {
                   <lucide-icon [name]="Mail" size="16"></lucide-icon>
                   <span>{{ user()?.email || 'Not available' }}</span>
                 </div>
-                <div class="meta-item" *ngIf="memberSince">
-                  <lucide-icon [name]="Calendar" size="16"></lucide-icon>
-                  <span>Member since {{ memberSince }}</span>
-                </div>
+                @if (memberSince) {
+                  <div class="meta-item">
+                    <lucide-icon [name]="Calendar" size="16"></lucide-icon>
+                    <span>Member since {{ memberSince }}</span>
+                  </div>
+                }
               </div>
             </div>
             

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -567,7 +567,7 @@ export class RegisterComponent {
             await this.authService.register(this.email, this.password, this.name);
             // Navigate to onboarding to select streaming services
             this.router.navigate(['/onboarding']);
-        } catch (error) {
+        } catch {
             // Error is handled by AuthService
         } finally {
             this.loading.set(false);
@@ -625,7 +625,7 @@ export class RegisterComponent {
         try {
             await this.authService.loginWithGoogle();
             this.router.navigate(['/onboarding']); // Should verify if new user, but onboarding handles redirects anyway
-        } catch (error) {
+        } catch {
             // Error handled by service
         } finally {
             this.loading.set(false);

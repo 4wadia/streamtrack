@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 @Component({
@@ -8,13 +8,8 @@ import { Router, RouterLink } from '@angular/router';
   templateUrl: './welcome.html',
   styleUrl: './welcome.css',
 })
-export class Welcome implements OnInit {
+export class Welcome {
   private router = inject(Router);
-
-  ngOnInit() {
-    // Optional: Redirect if already visited?
-    // For now, valid to visit /welcome manually
-  }
 
   getStarted() {
     localStorage.setItem('isFirstVisit', 'false');

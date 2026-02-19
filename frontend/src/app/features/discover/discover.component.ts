@@ -1,6 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { DiscoverService, ContentItem, Vibe } from '../../core/services/discover.service';
 import { AuthService } from '../../core/services/auth.service';
 import { VibePillBarComponent } from '../../shared/components/vibe-pill-bar/vibe-pill-bar.component';
@@ -15,7 +14,7 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Spa
     standalone: true,
     imports: [
         CommonModule,
-        RouterLink,
+
         VibePillBarComponent,
         ContentCardComponent,
         TonightsPickComponent,
@@ -235,12 +234,12 @@ export class DiscoverComponent implements OnInit {
         }
     }
 
-    private vibeIconMap: Record<string, any> = {
+    private vibeIconMap: Record<string, unknown> = {
         'coffee': Coffee, 'zap': Zap, 'gamepad-2': Gamepad2,
         'lightbulb': Lightbulb, 'moon': Moon, 'smile': Smile, 'sparkles': Sparkles
     };
 
-    getSelectedVibeIcon(): any {
+    getSelectedVibeIcon(): unknown {
         const vibe = this.vibes().find(v => v.id === this.selectedVibe());
         return this.vibeIconMap[vibe?.icon || ''] || Sparkles;
     }

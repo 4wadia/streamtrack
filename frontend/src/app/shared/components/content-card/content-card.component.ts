@@ -306,7 +306,7 @@ export class ContentCardComponent {
             posterPath: content.posterPath || undefined,
             status: 'want'
         }).subscribe({
-            next: () => { },
+
             error: (err) => {
                 console.error('Failed to add to watchlist', err);
                 this.isAdded.set(false);

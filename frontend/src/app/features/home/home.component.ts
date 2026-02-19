@@ -53,6 +53,8 @@ import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Che
                                 class="vibe-pill glass-panel" 
                                 [style.border-color]="vibe.color"
                                 (click)="navigateToVibe(vibe.name.toLowerCase())"
+                                (keydown.enter)="navigateToVibe(vibe.name.toLowerCase())"
+                                tabindex="0"
                             >
                                 <lucide-icon [name]="vibe.icon" [style.color]="vibe.color" size="18"></lucide-icon>
                                 <span>{{ vibe.name }}</span>

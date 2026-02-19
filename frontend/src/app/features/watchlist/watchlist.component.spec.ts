@@ -11,7 +11,9 @@ import { signal } from '@angular/core';
 describe('WatchlistComponent', () => {
     let component: WatchlistComponent;
     let fixture: ComponentFixture<WatchlistComponent>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let mockWatchlistService: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let watchlistSignal: any;
 
     const mockItems: WatchlistItem[] = [

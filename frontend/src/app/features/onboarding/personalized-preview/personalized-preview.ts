@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { DiscoverService } from '../../../core/services/discover.service';
+import { DiscoverService, ContentItem } from '../../../core/services/discover.service';
 
 @Component({
   selector: 'app-personalized-preview',
@@ -14,7 +14,7 @@ export class PersonalizedPreview implements OnInit {
   private discoverService = inject(DiscoverService);
   private router = inject(Router);
 
-  recommendations = signal<any[]>([]);
+  recommendations = signal<ContentItem[]>([]);
   loading = signal(true);
 
   async ngOnInit() {

@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WatchlistService, WatchlistItem } from '../../core/services/watchlist.service';
+import { WatchlistService } from '../../core/services/watchlist.service';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { WatchlistCardComponent } from './watchlist-card/watchlist-card.component';
 import { WatchlistTabsComponent, WatchlistTab } from './watchlist-tabs/watchlist-tabs.component';
@@ -82,7 +82,7 @@ type TypeFilter = 'all' | 'movie' | 'tv';
                 </div>
 
                 <div class="filter-group">
-                    <label class="filter-label">Type</label>
+                    <span class="filter-label">Type</span>
                     <div class="segmented">
                         @for (opt of typeOptions; track opt.value) {
                             <button 
@@ -95,7 +95,7 @@ type TypeFilter = 'all' | 'movie' | 'tv';
                 </div>
 
                 <div class="filter-group">
-                    <label class="filter-label">Sort By</label>
+                    <span class="filter-label">Sort By</span>
                     <div class="select-wrap">
                         <select class="filter-select" [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)">
                             @for (opt of sortOptions; track opt.value) {
@@ -148,9 +148,9 @@ type TypeFilter = 'all' | 'movie' | 'tv';
                     <app-watchlist-card
                         [item]="item"
                         [highlighted]="highlightedId() === item.contentId"
-                        (onStatusChange)="updateStatus(item.contentId, $event)"
-                        (onRemove)="removeItem(item.contentId)"
-                        (onRatingChange)="updateRating(item.contentId, $event)"
+                        (statusChange)="updateStatus(item.contentId, $event)"
+                        (remove)="removeItem(item.contentId)"
+                        (ratingChange)="updateRating(item.contentId, $event)"
                     ></app-watchlist-card>
                 }
             </div>
@@ -159,7 +159,7 @@ type TypeFilter = 'all' | 'movie' | 'tv';
 
       <!-- Stats Modal -->
       @if (showStats()) {
-          <app-stats-modal (close)="showStats.set(false)"></app-stats-modal>
+          <app-stats-modal (closeModal)="showStats.set(false)"></app-stats-modal>
       }
     </div>
     `,

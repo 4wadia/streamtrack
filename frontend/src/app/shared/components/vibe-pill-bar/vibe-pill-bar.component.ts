@@ -109,7 +109,7 @@ export class VibePillBarComponent {
     // Make icons available to template
     readonly Coffee = Coffee;
 
-    getIcon(name: string): any {
+    getIcon(name: string): unknown {
         const lower = name.toLowerCase();
         if (lower.includes('cozy')) return Coffee;
         if (lower.includes('intense')) return Zap;

@@ -22,8 +22,8 @@ import { LucideAngularModule, Moon, X, Play, Plus, RefreshCw, Star } from 'lucid
 
         <!-- Modal Overlay -->
         @if (isOpen()) {
-            <div class="modal-overlay" (click)="closeModal()">
-                <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-overlay" (click)="closeModal()" (keydown.escape)="closeModal()" tabindex="0" role="button" aria-label="Close modal">
+                <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="0" tabindex="-1" role="dialog" aria-modal="true">
                     <!-- Close Button -->
                     <button class="close-btn" (click)="closeModal()">
                         <lucide-icon [name]="X" [size]="20"></lucide-icon>

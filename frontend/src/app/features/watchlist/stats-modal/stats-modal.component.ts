@@ -8,11 +8,11 @@ import { LucideAngularModule, X, Film, Tv, Star, BookMarked, Play, CheckCircle }
     standalone: true,
     imports: [CommonModule, LucideAngularModule],
     template: `
-    <div class="modal-backdrop" (click)="close.emit()">
-        <div class="modal-panel glass-panel" (click)="$event.stopPropagation()">
+    <div class="modal-backdrop" (click)="closeModal.emit()" (keydown.escape)="closeModal.emit()" tabindex="0" role="button" aria-label="Close modal">
+        <div class="modal-panel glass-panel" (click)="$event.stopPropagation()" (keydown)="0" tabindex="-1" role="dialog" aria-modal="true">
             <div class="modal-header">
                 <h2 class="modal-title">Library Stats</h2>
-                <button class="close-btn" (click)="close.emit()">
+                <button class="close-btn" (click)="closeModal.emit()">
                     <lucide-icon [name]="X" [size]="20"></lucide-icon>
                 </button>
             </div>
@@ -309,7 +309,7 @@ import { LucideAngularModule, X, Film, Tv, Star, BookMarked, Play, CheckCircle }
     `]
 })
 export class StatsModalComponent {
-    @Output() close = new EventEmitter<void>();
+    @Output() closeModal = new EventEmitter<void>();
 
     private watchlistService = inject(WatchlistService);
 

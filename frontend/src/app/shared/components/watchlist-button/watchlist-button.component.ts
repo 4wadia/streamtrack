@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, signal, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { trigger, state, style, animate, transition, keyframes } from '@angular/animations';
+
 
 /**
  * Animated Watchlist Button Component

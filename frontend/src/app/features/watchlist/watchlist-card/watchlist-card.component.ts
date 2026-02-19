@@ -39,35 +39,38 @@ import { trigger, style, animate, transition } from '@angular/animations';
             <!-- Hover overlay -->
             <div class="hover-overlay">
                 <div class="overlay-actions">
-                    <button 
-                        *ngIf="item.status !== 'watching'"
-                        class="action-chip blue"
-                        (click)="onStatusChange.emit('watching')"
-                    >
+                    @if (item.status !== 'watching') {
+                        <button 
+                            class="action-chip blue"
+                            (click)="statusChange.emit('watching')"
+                        >
                         <lucide-icon [name]="Play" [size]="12"></lucide-icon>
                         Watching
                     </button>
-                    <button 
-                        *ngIf="item.status !== 'watched'"
-                        class="action-chip green"
-                        (click)="onStatusChange.emit('watched')"
-                    >
-                        <lucide-icon [name]="CheckCircle2" [size]="12"></lucide-icon>
-                        Watched
-                    </button>
-                    <button 
-                        *ngIf="item.status !== 'want'"
-                        class="action-chip indigo"
-                        (click)="onStatusChange.emit('want')"
-                    >
-                        <lucide-icon [name]="Bookmark" [size]="12"></lucide-icon>
-                        Plan
-                    </button>
+                    }
+                    @if (item.status !== 'watched') {
+                        <button 
+                            class="action-chip green"
+                            (click)="statusChange.emit('watched')"
+                        >
+                            <lucide-icon [name]="CheckCircle2" [size]="12"></lucide-icon>
+                            Watched
+                        </button>
+                    }
+                    @if (item.status !== 'want') {
+                        <button 
+                            class="action-chip indigo"
+                            (click)="statusChange.emit('want')"
+                        >
+                            <lucide-icon [name]="Bookmark" [size]="12"></lucide-icon>
+                            Plan
+                        </button>
+                    }
                 </div>
 
                 <button 
                     class="remove-btn"
-                    (click)="onRemove.emit()"
+                    (click)="remove.emit()"
                     title="Remove from library"
                 >
                     <lucide-icon [name]="Trash2" [size]="16"></lucide-icon>
@@ -89,7 +92,7 @@ import { trigger, style, animate, transition } from '@angular/animations';
             </div>
 
             <!-- Star Rating Input -->
-            <div class="star-input" (click)="$event.stopPropagation()">
+            <div class="star-input" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" role="group" aria-label="Rate this item">
                 @for (star of stars; track star) {
                     <button 
                         class="star-btn"
@@ -328,9 +331,9 @@ import { trigger, style, animate, transition } from '@angular/animations';
 export class WatchlistCardComponent {
     @Input({ required: true }) item!: WatchlistItem;
     @Input() highlighted = false;
-    @Output() onStatusChange = new EventEmitter<'want' | 'watching' | 'watched'>();
-    @Output() onRemove = new EventEmitter<void>();
-    @Output() onRatingChange = new EventEmitter<number>();
+    @Output() statusChange = new EventEmitter<'want' | 'watching' | 'watched'>();
+    @Output() remove = new EventEmitter<void>();
+    @Output() ratingChange = new EventEmitter<number>();
 
     readonly stars = [1, 2, 3, 4, 5];
     readonly Star = Star;
@@ -356,6 +359,6 @@ export class WatchlistCardComponent {
 
     setRating(rating: number) {
         const newRating = this.item.rating === rating ? 0 : rating;
-        this.onRatingChange.emit(newRating);
+        this.ratingChange.emit(newRating);
     }
 }

@@ -193,8 +193,8 @@ export interface TonightsPickData {
 })
 export class TonightsPickComponent {
     @Input() pick: TonightsPickData | null = null;
-    @Input() reason: string = '';
-    @Input() loading: boolean = false;
+    @Input() reason = '';
+    @Input() loading = false;
 
     private watchlistService = inject(WatchlistService);
 

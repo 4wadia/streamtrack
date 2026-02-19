@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ContentCardComponent, ContentItem } from './content-card.component';
 import { WatchlistService } from '../../../core/services/watchlist.service';
 
@@ -23,6 +23,7 @@ const mockContent: ContentItem = {
 describe('ContentCardComponent', () => {
     let component: ContentCardComponent;
     let fixture: ComponentFixture<ContentCardComponent>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let mockWatchlistService: any;
 
     beforeEach(async () => {
@@ -104,7 +105,6 @@ describe('ContentCardComponent', () => {
         });
 
         it('should set isAdded back to false on error', () => {
-            const { throwError } = require('rxjs');
             mockWatchlistService.addToWatchlist.mockReturnValue(throwError(() => new Error('fail')));
 
             const event = new MouseEvent('click');
