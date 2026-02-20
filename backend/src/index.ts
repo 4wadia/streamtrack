@@ -11,13 +11,17 @@ import watchlistRoutes from './routes/watchlist.routes';
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/streamtrack';
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:4200')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
 
 // Initialize Firebase Admin
 initializeFirebase();
 
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:4200',
+    origin: ALLOWED_ORIGINS,
     credentials: true
 }));
 app.use(express.json());

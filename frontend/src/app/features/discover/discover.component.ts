@@ -7,7 +7,7 @@ import { ContentCardComponent } from '../../shared/components/content-card/conte
 import { TonightsPickComponent } from '../../shared/components/tonights-pick/tonights-pick.component';
 import { fadeAnimation, staggerAnimation } from '../../shared/animations/fade.animation';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
-import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Sparkles } from 'lucide-angular';
+import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Sparkles, type LucideIconData } from 'lucide-angular';
 
 @Component({
     selector: 'app-discover',
@@ -234,12 +234,12 @@ export class DiscoverComponent implements OnInit {
         }
     }
 
-    private vibeIconMap: Record<string, unknown> = {
+    private vibeIconMap: Record<string, LucideIconData> = {
         'coffee': Coffee, 'zap': Zap, 'gamepad-2': Gamepad2,
         'lightbulb': Lightbulb, 'moon': Moon, 'smile': Smile, 'sparkles': Sparkles
     };
 
-    getSelectedVibeIcon(): unknown {
+    getSelectedVibeIcon(): LucideIconData {
         const vibe = this.vibes().find(v => v.id === this.selectedVibe());
         return this.vibeIconMap[vibe?.icon || ''] || Sparkles;
     }

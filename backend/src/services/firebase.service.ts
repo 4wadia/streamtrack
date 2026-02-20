@@ -5,19 +5,38 @@ import * as path from 'path';
 
 let initialized = false;
 
-export function initializeFirebase(): void {
-    if (initialized) return;
-    const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './serviceAccountKey.json';
-    const absolutePath = path.resolve(process.cwd(), serviceAccountPath);
-
-    if (!fs.existsSync(absolutePath)) {
-        console.warn('⚠️ Firebase service account not found at:', absolutePath);
-        console.warn('⚠️ Firebase authentication will not work until credentials are configured.');
-        return;
-    }
+function getServiceAccountFromEnv(): ServiceAccount | null {
+    const rawJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    if (!rawJson) return null;
 
     try {
-        const serviceAccount = JSON.parse(fs.readFileSync(absolutePath, 'utf-8')) as ServiceAccount;
+        return JSON.parse(rawJson) as ServiceAccount;
+    } catch (error) {
+        console.error('❌ Invalid FIREBASE_SERVICE_ACCOUNT_JSON:', error);
+        return null;
+    }
+}
+
+export function initializeFirebase(): void {
+    if (initialized) return;
+
+    try {
+        const serviceAccountFromEnv = getServiceAccountFromEnv();
+        let serviceAccount: ServiceAccount | null = serviceAccountFromEnv;
+
+        if (!serviceAccount) {
+            const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './serviceAccountKey.json';
+            const absolutePath = path.resolve(process.cwd(), serviceAccountPath);
+
+            if (!fs.existsSync(absolutePath)) {
+                console.warn('⚠️ Firebase service account not found at:', absolutePath);
+                console.warn('⚠️ Firebase authentication will not work until credentials are configured.');
+                return;
+            }
+
+            serviceAccount = JSON.parse(fs.readFileSync(absolutePath, 'utf-8')) as ServiceAccount;
+        }
+
         initializeApp({
             credential: cert(serviceAccount)
         });

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Sparkles } from 'lucide-angular';
+import { LucideAngularModule, Coffee, Zap, Gamepad2, Lightbulb, Moon, Smile, Sparkles, type LucideIconData } from 'lucide-angular';
 
 export interface Vibe {
     id: string;
@@ -109,7 +109,7 @@ export class VibePillBarComponent {
     // Make icons available to template
     readonly Coffee = Coffee;
 
-    getIcon(name: string): unknown {
+    getIcon(name: string): LucideIconData {
         const lower = name.toLowerCase();
         if (lower.includes('cozy')) return Coffee;
         if (lower.includes('intense')) return Zap;
