@@ -42,6 +42,7 @@
         "firebase": "^12.8.0",
         "lucide-angular": "^0.563.0",
         "rxjs": "~7.8.0",
+        "simple-icons": "^16.9.0",
         "tslib": "^2.3.0",
         "zone.js": "^0.16.0",
       },
@@ -1547,6 +1548,8 @@
     "signal-exit": ["signal-exit@4.1.0", "", {}, "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw=="],
 
     "sigstore": ["sigstore@4.1.0", "", { "dependencies": { "@sigstore/bundle": "^4.0.0", "@sigstore/core": "^3.1.0", "@sigstore/protobuf-specs": "^0.5.0", "@sigstore/sign": "^4.1.0", "@sigstore/tuf": "^4.0.1", "@sigstore/verify": "^3.1.0" } }, "sha512-/fUgUhYghuLzVT/gaJoeVehLCgZiUxPCPMcyVNY0lIf/cTCz58K/WTI7PefDarXxp9nUKpEwg1yyz3eSBMTtgA=="],
+
+    "simple-icons": ["simple-icons@16.9.0", "", {}, "sha512-aKst2C7cLkFyaiQ/Crlwxt9xYOpGPk05XuJZ0ZTJNNCzHCKYrGWz2ebJSi5dG8CmTCxUF/BGs6A8uyJn/EQxqw=="],
 
     "slice-ansi": ["slice-ansi@7.1.2", "", { "dependencies": { "ansi-styles": "^6.2.1", "is-fullwidth-code-point": "^5.0.0" } }, "sha512-iOBWFgUX7caIZiuutICxVgX1SdxwAVFFKwt1EvMYYec/NWO5meOJ6K5uQxhrYBdQJne4KxiqZc+KptFOWFSI9w=="],
 
