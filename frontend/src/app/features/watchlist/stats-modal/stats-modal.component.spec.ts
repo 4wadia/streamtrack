@@ -133,8 +133,8 @@ describe('StatsModalComponent', () => {
     describe('close event', () => {
         it('should emit close event', () => {
             let closed = false;
-            component.close.subscribe(() => { closed = true; });
-            component.close.emit();
+            component.closeModal.subscribe(() => { closed = true; });
+            component.closeModal.emit();
             expect(closed).toBe(true);
         });
     });

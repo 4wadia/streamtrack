@@ -244,8 +244,21 @@ router.post('/vibes/custom', authMiddleware, async (req: AuthRequest, res: Respo
             res.status(400).json({ error: 'Name is required and must be 50 characters or less' });
             return;
         }
-        if (!genres || !Array.isArray(genres) || genres.length === 0) {
-            res.status(400).json({ error: 'At least one genre is required' });
+        if (!genres || !Array.isArray(genres) || genres.length === 0 || !genres.every(g => Number.isFinite(g) && Number.isInteger(g))) {
+            res.status(400).json({ error: 'At least one genre is required and all must be integers' });
+            return;
+        }
+
+        if (minRating !== undefined) {
+            const numRating = Number(minRating);
+            if (isNaN(numRating) || numRating < 0 || numRating > 10) {
+                res.status(400).json({ error: 'MinRating must be a number between 0 and 10' });
+                return;
+            }
+        }
+
+        if (color !== undefined && (typeof color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(color))) {
+            res.status(400).json({ error: 'Color must be a valid hex code (e.g. #FFFFFF)' });
             return;
         }
 
@@ -267,7 +280,7 @@ router.post('/vibes/custom', authMiddleware, async (req: AuthRequest, res: Respo
             id: `cv_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
             name: name.trim(),
             genres: genres.map((g: number) => Number(g)),
-            minRating: minRating ? Number(minRating) : undefined,
+            minRating: minRating !== undefined ? Number(minRating) : undefined,
             color: color && /^#[0-9A-Fa-f]{6}$/.test(color) ? color : undefined,
             createdAt: new Date()
         };
@@ -292,6 +305,29 @@ router.put('/vibes/custom/:id', authMiddleware, async (req: AuthRequest, res: Re
         const { uid } = req.user!;
         const { id } = req.params;
         const { name, genres, minRating, color } = req.body;
+
+        if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0 || name.length > 50)) {
+            res.status(400).json({ error: 'Name must be a string up to 50 characters' });
+            return;
+        }
+
+        if (genres !== undefined && (!Array.isArray(genres) || genres.length === 0 || !genres.every(g => Number.isFinite(g) && Number.isInteger(g)))) {
+            res.status(400).json({ error: 'Genres must be a non-empty array of integers' });
+            return;
+        }
+
+        if (minRating !== undefined) {
+            const numRating = Number(minRating);
+            if (isNaN(numRating) || numRating < 0 || numRating > 10) {
+                res.status(400).json({ error: 'MinRating must be a number between 0 and 10' });
+                return;
+            }
+        }
+
+        if (color !== undefined && (typeof color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(color))) {
+            res.status(400).json({ error: 'Color must be a valid hex code (e.g. #FFFFFF)' });
+            return;
+        }
 
         const user = await User.findOne({ firebaseUid: uid });
 
@@ -362,3 +398,4 @@ router.delete('/vibes/custom/:id', authMiddleware, async (req: AuthRequest, res:
 });
 
 export default router;
+

@@ -64,7 +64,7 @@ describe('WatchlistCardComponent', () => {
     describe('setRating', () => {
         it('should emit the clicked rating when different from current', () => {
             const ratings: number[] = [];
-            component.onRatingChange.subscribe((r: number) => ratings.push(r));
+            component.ratingChange.subscribe((r: number) => ratings.push(r));
 
             component.item = { ...mockItem, rating: 3 };
             component.setRating(4);
@@ -74,7 +74,7 @@ describe('WatchlistCardComponent', () => {
 
         it('should emit 0 when clicking same rating (toggle off)', () => {
             const ratings: number[] = [];
-            component.onRatingChange.subscribe((r: number) => ratings.push(r));
+            component.ratingChange.subscribe((r: number) => ratings.push(r));
 
             component.item = { ...mockItem, rating: 3 };
             component.setRating(3);
@@ -84,7 +84,7 @@ describe('WatchlistCardComponent', () => {
 
         it('should emit rating when item has no current rating', () => {
             const ratings: number[] = [];
-            component.onRatingChange.subscribe((r: number) => ratings.push(r));
+            component.ratingChange.subscribe((r: number) => ratings.push(r));
 
             component.item = { ...mockItem, rating: undefined };
             component.setRating(5);
@@ -96,10 +96,10 @@ describe('WatchlistCardComponent', () => {
     describe('status change events', () => {
         it('should emit status change when action chip clicked', () => {
             const statuses: string[] = [];
-            component.onStatusChange.subscribe((s: string) => statuses.push(s));
+            component.statusChange.subscribe((s: string) => statuses.push(s));
 
-            component.onStatusChange.emit('watching');
-            component.onStatusChange.emit('watched');
+            component.statusChange.emit('watching');
+            component.statusChange.emit('watched');
 
             expect(statuses).toEqual(['watching', 'watched']);
         });
@@ -108,9 +108,9 @@ describe('WatchlistCardComponent', () => {
     describe('remove event', () => {
         it('should emit remove event', () => {
             let removed = false;
-            component.onRemove.subscribe(() => { removed = true; });
+            component.remove.subscribe(() => { removed = true; });
 
-            component.onRemove.emit();
+            component.remove.emit();
 
             expect(removed).toBe(true);
         });

@@ -93,4 +93,22 @@ describe("User Routes - Genres", () => {
 
         expect(res.status).toBe(400);
     });
+
+    it("should reject negative or zero genres", async () => {
+        const res = await request(app)
+            .put("/api/user/genres")
+            .set("Authorization", "Bearer valid-token")
+            .send({ genres: [-1, 0, 28] });
+
+        expect(res.status).toBe(400);
+    });
+
+    it("should reject float genres", async () => {
+        const res = await request(app)
+            .put("/api/user/genres")
+            .set("Authorization", "Bearer valid-token")
+            .send({ genres: [28.5] });
+
+        expect(res.status).toBe(400);
+    });
 });

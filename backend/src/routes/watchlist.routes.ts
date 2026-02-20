@@ -83,8 +83,34 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         const { uid } = req.user!;
         const { contentId, title, type, posterPath, status, rating, notes } = req.body;
 
+        let normalizedRating: number | undefined = undefined;
+
         if (!contentId || !title || !type) {
             res.status(400).json({ error: 'Missing required fields: contentId, title, type' });
+            return;
+        }
+
+        if (type !== 'movie' && type !== 'tv') {
+            res.status(400).json({ error: 'Type must be "movie" or "tv"' });
+            return;
+        }
+
+        if (status !== undefined && !['want', 'watching', 'watched'].includes(status)) {
+            res.status(400).json({ error: 'Status must be "want", "watching", or "watched"' });
+            return;
+        }
+
+        if (rating !== undefined) {
+            const numRating = Number(rating);
+            if (isNaN(numRating) || numRating < 0 || numRating > 10) {
+                res.status(400).json({ error: 'Rating must be a number between 0 and 10' });
+                return;
+            }
+            normalizedRating = numRating;
+        }
+
+        if (notes !== undefined && typeof notes !== 'string') {
+            res.status(400).json({ error: 'Notes must be a string' });
             return;
         }
 
@@ -107,7 +133,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             type,
             posterPath,
             status: status || 'want',
-            rating,
+            rating: normalizedRating,
             notes,
             addedAt: new Date(),
             updatedAt: new Date()
@@ -134,6 +160,27 @@ router.put('/:contentId', authMiddleware, async (req: AuthRequest, res: Response
         const { contentId } = req.params;
         const updates = req.body;
 
+        let normalizedRating: number | undefined = undefined;
+
+        if (updates.status !== undefined && !['want', 'watching', 'watched'].includes(updates.status)) {
+            res.status(400).json({ error: 'Status must be "want", "watching", or "watched"' });
+            return;
+        }
+
+        if (updates.rating !== undefined) {
+            const numRating = Number(updates.rating);
+            if (isNaN(numRating) || numRating < 0 || numRating > 10) {
+                res.status(400).json({ error: 'Rating must be a number between 0 and 10' });
+                return;
+            }
+            normalizedRating = numRating;
+        }
+
+        if (updates.notes !== undefined && typeof updates.notes !== 'string') {
+            res.status(400).json({ error: 'Notes must be a string' });
+            return;
+        }
+
         const user = await User.findOne({ firebaseUid: uid });
         if (!user) {
             res.status(404).json({ error: 'User not found' });
@@ -148,7 +195,7 @@ router.put('/:contentId', authMiddleware, async (req: AuthRequest, res: Response
 
         // Apply updates
         if (updates.status) item.status = updates.status;
-        if (updates.rating !== undefined) item.rating = updates.rating;
+        if (normalizedRating !== undefined) item.rating = normalizedRating;
         if (updates.notes !== undefined) item.notes = updates.notes;
         item.updatedAt = new Date();
 
@@ -194,3 +241,6 @@ router.delete('/:contentId', authMiddleware, async (req: AuthRequest, res: Respo
 });
 
 export default router;
+
+
+

@@ -179,4 +179,75 @@ describe("Watchlist Routes", () => {
         expect(res.body.stats.byType.movie).toBe(2);
         expect(res.body.stats.byType.tv).toBe(1);
     });
+
+    it("should reject invalid watchlist item type", async () => {
+        const newItem = {
+            contentId: "999",
+            title: "Test Invalid Type",
+            type: "podcast" // Invalid
+        };
+
+        const res = await request(app)
+            .post("/api/watchlist")
+            .set("Authorization", "Bearer valid-token")
+            .send(newItem);
+
+        expect(res.status).toBe(400);
+        expect(res.body.error).toContain("Type must be");
+    });
+
+    it("should reject invalid watchlist item status and rating", async () => {
+        const newItem = {
+            contentId: "888",
+            title: "Test Invalid Status",
+            type: "movie",
+            status: "finished", // Invalid
+            rating: 11 // Invalid
+        };
+
+        const res = await request(app)
+            .post("/api/watchlist")
+            .set("Authorization", "Bearer valid-token")
+            .send(newItem);
+
+        expect(res.status).toBe(400);
+
+        const res2 = await request(app)
+            .post("/api/watchlist")
+            .set("Authorization", "Bearer valid-token")
+            .send({ ...newItem, status: "watched" }); // Fix status, rating is still invalid
+
+        expect(res2.status).toBe(400);
+    });
+
+    it("should reject update with invalid rating or status", async () => {
+        // Seed
+        await User.findOneAndUpdate(
+            { firebaseUid: "test-uid" },
+            {
+                $push: {
+                    watchlist: {
+                        contentId: "update-test",
+                        title: "Test Movie",
+                        type: "movie",
+                        status: "want",
+                        addedAt: new Date()
+                    }
+                }
+            }
+        );
+
+        const res = await request(app)
+            .put("/api/watchlist/update-test")
+            .set("Authorization", "Bearer valid-token")
+            .send({ status: "invalid-status" });
+        expect(res.status).toBe(400);
+
+        const res2 = await request(app)
+            .put("/api/watchlist/update-test")
+            .set("Authorization", "Bearer valid-token")
+            .send({ rating: -1 });
+        expect(res2.status).toBe(400);
+    });
 });
+

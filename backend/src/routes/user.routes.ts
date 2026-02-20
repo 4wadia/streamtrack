@@ -54,6 +54,12 @@ router.put('/services', authMiddleware, async (req: AuthRequest, res: Response) 
             return;
         }
 
+        // Validate each service is a string
+        if (!services.every(s => typeof s === 'string')) {
+            res.status(400).json({ error: 'All services must be strings' });
+            return;
+        }
+
         // Validate each service ID
         const validServiceIds = SUPPORTED_SERVICES.map(s => s.id);
         const invalidServices = services.filter(s => !validServiceIds.includes(s));
@@ -130,9 +136,9 @@ router.put('/genres', authMiddleware, async (req: AuthRequest, res: Response) =>
             return;
         }
 
-        // Validate that all items are numbers
-        if (!genres.every(g => typeof g === 'number')) {
-            res.status(400).json({ error: 'All genres must be numbers' });
+        // Validate that all items are integers
+        if (!genres.every(g => typeof g === 'number' && Number.isInteger(g) && g > 0)) {
+            res.status(400).json({ error: 'All genres must be positive integers' });
             return;
         }
 

@@ -19,7 +19,7 @@ Historical completed phase detail was archived by consolidation to keep this pla
 
 1. Reliability and API consistency
 - [ ] Align route docs and response contracts with current backend behavior.
-- [ ] Add stronger request validation on write endpoints (`watchlist`, `custom vibes`, `user services/genres`).
+- [x] Add stronger request validation on write endpoints (`watchlist`, `custom vibes`, `user services/genres`).
 - [ ] Normalize error payload shape across all route modules.
 
 2. Region and provider robustness
@@ -36,7 +36,7 @@ Historical completed phase detail was archived by consolidation to keep this pla
 - [ ] Ensure custom vibe management UX exists end-to-end (API exists; verify UI parity).
 
 5. Testing and quality gates
-- [ ] Expand backend route tests for unhappy paths and validation failures.
+- [x] Expand backend route tests for unhappy paths and validation failures.
 - [ ] Expand frontend component/service tests for onboarding/search/watchlist critical flows.
 - [ ] Resolve any remaining type-test friction so `typecheck` and tests are stable by default.
 
