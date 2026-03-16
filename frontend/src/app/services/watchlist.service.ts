@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, map, of, tap, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface WatchlistItem {
   contentId: string;
@@ -41,7 +42,7 @@ export interface WatchlistStats {
 })
 export class WatchlistService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/watchlist';
+  private apiUrl = `${environment.apiUrl}/watchlist`;
   private imageBaseUrl = 'https://image.tmdb.org/t/p/';
   private storageKey = 'stream-watchlist';
   private itemsSubject = new BehaviorSubject<WatchlistItem[]>(this.loadFromStorage());
