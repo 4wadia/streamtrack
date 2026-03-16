@@ -1,0 +1,5 @@
+{
+  "name": "StreamTrack",
+  "description": "A minimal, linear mercury themed streaming tracker application.",
+  "requestFramePermissions": []
+}
