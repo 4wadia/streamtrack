@@ -1,13 +1,15 @@
 FROM oven/bun:1.2.22 AS base
 WORKDIR /app
 
-COPY package.json bun.lock ./
-COPY backend/package.json ./backend/package.json
-RUN bun install --frozen-lockfile
+# Copy only backend package.json and install deps (no workspace needed)
+COPY backend/package.json ./package.json
+COPY bun.lock ./bun.lock
+RUN bun install --frozen-lockfile || bun install
 
-COPY backend ./backend
-WORKDIR /app/backend
+# Copy backend source code
+COPY backend ./
 
+# Build the backend
 RUN bun run build
 
 EXPOSE 3000
