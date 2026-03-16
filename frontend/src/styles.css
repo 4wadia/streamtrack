@@ -1,164 +1,115 @@
-/* NETFLIX-INSPIRED DARK - Design System */
-@import "tailwindcss";
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Inter', ui-monospace, SFMono-Regular, monospace;
+}
 
 :root {
-  /* ── Core Backgrounds ── */
-  --bg-cinema-black: #141414;
-  --bg-cinema-dark: #181818;
-  --bg-cinema-elevated: #262626;
-
-  /* Aliases (used across components) */
-  --bg-primary: var(--bg-cinema-black);
-  --bg-secondary: var(--bg-cinema-dark);
-  --bg-elevated: var(--bg-cinema-elevated);
-  --bg-card: rgba(24, 24, 24, 0.85);
-
-  /* ── Glass & Overlays ── */
-  --glass-base: rgba(20, 20, 20, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.15);
-  --glass-highlight: rgba(255, 255, 255, 0.1);
-
-  /* ── Text Colors ── */
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0a0;
-  --text-muted: #666666;
-
-  /* ── Accent Colors ── */
-  --color-accent: #E50914;
-  --color-accent-hover: #B20710;
-  --accent-primary: #E50914;
-  --accent-hover: #B20710;
-  --accent-error: #ef4444;
-  --accent-success: #22c55e;
-  --accent-netflix-red: #E50914;
-  --accent-neon-blue: #46d369;
-  --accent-signal-amber: #eebc1d;
-
-  /* ── Typography ── */
-  --font-display: 'Roboto', sans-serif;
-  --font-body: 'Roboto', sans-serif;
-
-  /* ── Spacing ── */
-  --space-2xs: 0.25rem;
-  --space-xs: 0.5rem;
-  --space-sm: 0.75rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --space-2xl: 3rem;
-  --space-3xl: 4.5rem;
-
-  /* ── Border Radii ── */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-
-  /* ── Shadows ── */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-
-  /* ── Transitions ── */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.3s ease;
-  --ease-cinema: cubic-bezier(0.25, 0.8, 0.25, 1);
-
-  /* ── Animation Durations ── */
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
-  --duration-carousel: 1000ms;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Inter', ui-monospace, SFMono-Regular, monospace;
 }
 
-/* Global Reset & Base */
+* {
+  font-family: inherit;
+}
+
 body {
-  background-color: var(--bg-cinema-black);
-  color: white;
-  font-family: var(--font-body);
   margin: 0;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-sans) !important;
+  background-color: #fafafa;
+  color: #050505;
 }
 
-/* Typography Utilities */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  /* Bold headings */
-  letter-spacing: normal;
+/* Ensure all interactive elements inherit correctly */
+button,
+input,
+textarea,
+select,
+a {
+  font-family: inherit;
 }
 
-.text-display-huge {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  line-height: 1.1;
-  font-weight: 900;
-  letter-spacing: -0.01em;
-  color: white;
-  text-shadow: 2px 4px 10px rgba(0, 0, 0, 0.5);
+/* Animations that were previously handled by Framer Motion */
+.reveal {
+  animation: reveal 0.8s cubic-bezier(0.2, 0, 0, 1) forwards;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
+.delay-1 {
+  animation-delay: 0.1s;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-cinema-black);
+.delay-2 {
+  animation-delay: 0.2s;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #404040;
-  border-radius: 4px;
+.delay-3 {
+  animation-delay: 0.3s;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #666;
+.delay-4 {
+  animation-delay: 0.4s;
 }
 
-/* Glassmorphism Utilities */
-.glass-panel {
-  background: var(--glass-base);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--glass-border);
-}
-
-/* Layout Utilities */
-.container-cinema {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 4%;
-}
-
-/* Animations */
-@keyframes slideUpFade {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-
+@keyframes reveal {
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@keyframes scaleIn {
+.suspension-shadow {
+  box-shadow:
+    0 30px 60px -12px rgba(0, 0, 0, 0.25),
+    0 18px 36px -18px rgba(0, 0, 0, 0.3);
+}
+
+.route-slide-shell {
+  contain: layout paint;
+  will-change: transform;
+}
+
+@keyframes detailsBackdropIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
   }
-
   to {
     opacity: 1;
-    transform: scale(1);
   }
+}
+
+@keyframes detailsExpandIn {
+  from {
+    transform: translateY(16px) scale(0.97);
+    opacity: 0.75;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.details-backdrop {
+  animation: detailsBackdropIn 180ms ease-out;
+}
+
+.details-expand {
+  animation: detailsExpandIn 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.disable-reveal .reveal {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
