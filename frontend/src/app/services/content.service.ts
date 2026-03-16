@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface ContentItem {
   id: number | string;
@@ -40,8 +41,8 @@ export interface PagedContentResponse {
 })
 export class ContentService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/content';
-  private discoverUrl = 'http://localhost:3000/api/discover';
+  private apiUrl = `${environment.apiUrl}/content`;
+  private discoverUrl = `${environment.apiUrl}/discover`;
 
   getTrending(
     type: 'movie' | 'tv' | 'all' = 'all',
