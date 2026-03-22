@@ -13,7 +13,7 @@ import { AuthService } from '../services/auth.service';
       <article
         class="w-full max-w-md border border-black/10 rounded-3xl bg-white shadow-sm p-8 reveal"
       >
-        <p class="text-[10px] font-mono text-black/50 uppercase tracking-widest mb-2">Join Kino</p>
+        <p class="text-[10px] font-mono text-black/50 uppercase tracking-widest mb-2">Join StreamTrack</p>
         <h1 class="text-3xl font-bold tracking-tight text-black mb-6">Create Account</h1>
 
         <form class="flex flex-col gap-4" (submit)="signup($event)">
@@ -76,7 +76,7 @@ import { AuthService } from '../services/auth.service';
 
           @if (errorMessage()) {
             <p
-              class="text-[12px] text-red-600 border border-red-200 bg-red-50 rounded-lg px-3 py-2"
+              class="text-[12px] text-[#1d1d1f] border border-[#e2e2e7] bg-[#fcfcfd] rounded-lg px-3 py-2"
             >
               {{ errorMessage() }}
             </p>
@@ -112,7 +112,7 @@ export class SignupComponent {
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
 
-  signup(event: Event): void {
+  async signup(event: Event): Promise<void> {
     event.preventDefault();
     if (this.isSubmitting()) {
       return;
@@ -128,7 +128,7 @@ export class SignupComponent {
     this.isSubmitting.set(true);
 
     try {
-      this.authService.signup({
+      await this.authService.signup({
         name: this.name,
         email: this.email,
         password: this.password,

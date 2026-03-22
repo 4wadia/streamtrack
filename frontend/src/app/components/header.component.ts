@@ -5,8 +5,13 @@ import {
   HostListener,
   OnDestroy,
   ViewChild,
+  ViewChildren,
+  QueryList,
+  effect,
+  AfterViewInit,
   inject,
   signal,
+  computed,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
@@ -27,29 +32,30 @@ import { WatchlistService } from '../services/watchlist.service';
       >
         <div class="flex items-center gap-4 lg:gap-8">
           <a
-            routerLink="/"
+            routerLink="/home"
             class="flex items-center gap-2 text-lg font-bold tracking-tight text-black no-underline"
           >
             <span class="flex h-5 w-5 items-center justify-center rounded-full bg-black">
               <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
             </span>
-            Kino
+            StreamTrack
           </a>
 
-          <nav
-            class="relative hidden min-w-[220px] grid-cols-2 rounded-full border border-black/10 bg-black/[0.03] p-1 md:grid"
-          >
+          @if (!isAuthPage()) {
+            <nav
+              class="relative hidden min-w-[220px] grid-cols-2 rounded-full border border-black/10 bg-black/[0.03] p-1 md:grid"
+            >
             <span
               class="absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-black transition-transform duration-300 ease-out"
               [ngClass]="activeNavPath() === '/watchlist' ? 'translate-x-full' : 'translate-x-0'"
             ></span>
 
             <a
-              routerLink="/"
-              (click)="setActiveNav('/')"
+              routerLink="/home"
+              (click)="setActiveNav('/home')"
               class="relative z-10 rounded-full px-4 py-2 text-center text-[12px] leading-none transition-colors no-underline"
               [ngClass]="
-                activeNavPath() === '/'
+                activeNavPath() === '/home'
                   ? 'font-semibold text-white'
                   : 'font-medium text-black/70 hover:text-black'
               "
@@ -70,11 +76,13 @@ import { WatchlistService } from '../services/watchlist.service';
               Watchlist
             </a>
           </nav>
+          }
         </div>
 
         <div class="flex items-center gap-2 lg:gap-3">
-          <div
-            #searchShell
+          @if (!isAuthPage()) {
+            <div
+              #searchShell
             class="relative h-9 overflow-hidden rounded-full border border-black/10 bg-black/[0.03] transition-[width,padding] duration-300 ease-out"
             [ngClass]="isSearchExpanded() ? 'w-56 pl-3 pr-2 lg:w-64' : 'w-9 px-0'"
           >
@@ -102,17 +110,25 @@ import { WatchlistService } from '../services/watchlist.service';
           </div>
 
           <div
-            class="hidden items-center gap-1 rounded-full border border-black/10 bg-black/[0.03] p-1 xl:flex"
+            class="hidden items-center gap-1 rounded-full border border-black/10 bg-black/[0.03] p-1 xl:flex relative"
           >
+            <!-- Sliding Background -->
+            <div
+              class="absolute top-1 bottom-1 rounded-full bg-black transition-all duration-300 ease-out z-0"
+              [style.left.px]="pillIndicatorLeft()"
+              [style.width.px]="pillIndicatorWidth()"
+            ></div>
+
             @for (pill of pills; track pill) {
               <button
+                #pillButton
                 type="button"
                 (click)="setActivePill(pill)"
-                class="rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors"
+                class="relative z-10 rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors"
                 [ngClass]="
                   state.activePill() === pill
-                    ? 'bg-black text-white'
-                    : 'bg-transparent text-black/65 hover:text-black'
+                    ? 'text-white'
+                    : 'text-black/65 hover:text-black'
                 "
               >
                 {{ pill }}
@@ -127,8 +143,9 @@ import { WatchlistService } from '../services/watchlist.service';
           >
             <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
           </button>
+          }
 
-          @if (auth.isAuthenticated()) {
+          @if (auth.isAuthenticated() && !isAuthPage()) {
             <a
               routerLink="/profile"
               class="hidden h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/[0.03] text-black transition-colors hover:bg-black hover:text-white no-underline md:flex"
@@ -142,37 +159,43 @@ import { WatchlistService } from '../services/watchlist.service';
             >
               Logout
             </button>
-          } @else {
-            <a
-              routerLink="/login"
-              class="hidden rounded-full border border-black/10 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-black/70 transition-colors hover:bg-black hover:text-white no-underline md:block"
-            >
-              Login
-            </a>
-            <a
-              routerLink="/signup"
-              class="hidden rounded-full border border-black bg-black px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-white transition-opacity hover:opacity-90 no-underline md:block"
-            >
-              Sign Up
-            </a>
+          } @else if (!auth.isAuthenticated()) {
+            @if (!isLoginPage()) {
+              <a
+                routerLink="/login"
+                class="hidden rounded-full border border-black/10 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-black/70 transition-colors hover:bg-black hover:text-white no-underline md:block"
+              >
+                Login
+              </a>
+            }
+            @if (!isSignupPage()) {
+              <a
+                routerLink="/signup"
+                class="hidden rounded-full border border-black bg-black px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-white transition-opacity hover:opacity-90 no-underline md:block"
+              >
+                Sign Up
+              </a>
+            }
           }
 
-          <button
-            type="button"
-            (click)="toggleMobileMenu()"
+          @if (!isAuthPage()) {
+            <button
+              type="button"
+              (click)="toggleMobileMenu()"
             class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/[0.03] text-black md:hidden"
           >
             <lucide-icon [name]="mobileMenuOpen() ? 'x' : 'list'" class="h-4 w-4"></lucide-icon>
           </button>
+          }
         </div>
       </div>
 
-      @if (mobileMenuOpen()) {
+      @if (mobileMenuOpen() && !isAuthPage()) {
         <div class="border-t border-black/10 bg-white md:hidden">
           <div class="space-y-4 px-6 py-4">
             <nav class="flex flex-col gap-1">
               <a
-                routerLink="/"
+                routerLink="/home"
                 (click)="closeMobileMenu()"
                 class="rounded-xl px-3 py-2 text-sm text-black/75 no-underline"
               >
@@ -370,7 +393,7 @@ import { WatchlistService } from '../services/watchlist.service';
     }
   `,
 })
-export class HeaderComponent implements OnDestroy {
+export class HeaderComponent implements OnDestroy, AfterViewInit {
   state = inject(StateService);
   auth = inject(AuthService);
   private router = inject(Router);
@@ -378,13 +401,22 @@ export class HeaderComponent implements OnDestroy {
 
   @ViewChild('searchShell') searchShell?: ElementRef<HTMLElement>;
   @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
+  @ViewChildren('pillButton') pillButtons!: QueryList<ElementRef>;
 
-  activeNavPath = signal<'/' | '/watchlist'>('/');
+  currentUrl = signal<string>('/');
+  isAuthPage = computed(() => this.currentUrl() === '/login' || this.currentUrl() === '/signup');
+  isLoginPage = computed(() => this.currentUrl() === '/login');
+  isSignupPage = computed(() => this.currentUrl() === '/signup');
+
+  activeNavPath = signal<'/home' | '/watchlist'>('/home');
   isSearchExpanded = signal(false);
   mobileMenuOpen = signal(false);
   isAddModalOpen = signal(false);
   isSubmittingAdd = signal(false);
   pills = ['All', 'Netflix', 'Prime Video', 'JioHotstar', 'ZEE5', 'SonyLIV'];
+
+  pillIndicatorLeft = signal(0);
+  pillIndicatorWidth = signal(0);
 
   newItem = {
     title: '',
@@ -403,6 +435,27 @@ export class HeaderComponent implements OnDestroy {
     this.routerSub = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => this.setActiveNavByUrl(event.urlAfterRedirects));
+
+    effect(() => {
+      const active = this.state.activePill();
+      setTimeout(() => this.updatePillIndicator());
+    });
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.updatePillIndicator(), 100);
+  }
+
+  updatePillIndicator(): void {
+    if (!this.pillButtons) return;
+    const index = this.pills.indexOf(this.state.activePill());
+    if (index === -1) return;
+    const button = this.pillButtons.toArray()[index];
+    if (button) {
+      const el = button.nativeElement;
+      this.pillIndicatorLeft.set(el.offsetLeft);
+      this.pillIndicatorWidth.set(el.offsetWidth);
+    }
   }
 
   ngOnDestroy(): void {
@@ -434,7 +487,12 @@ export class HeaderComponent implements OnDestroy {
     }
   }
 
-  setActiveNav(path: '/' | '/watchlist'): void {
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updatePillIndicator();
+  }
+
+  setActiveNav(path: '/home' | '/watchlist'): void {
     this.activeNavPath.set(path);
   }
 
@@ -516,11 +574,14 @@ export class HeaderComponent implements OnDestroy {
   }
 
   private setActiveNavByUrl(url: string): void {
+    const urlWithoutQuery = url.split('?')[0];
+    this.currentUrl.set(urlWithoutQuery);
+
     if (url.startsWith('/watchlist')) {
       this.activeNavPath.set('/watchlist');
       return;
     }
 
-    this.activeNavPath.set('/');
+    this.activeNavPath.set('/home');
   }
 }

@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, map, of, tap, throwError } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { ApiService } from './api.service';
 
 export interface WatchlistItem {
   contentId: string;
@@ -41,8 +40,8 @@ export interface WatchlistStats {
   providedIn: 'root',
 })
 export class WatchlistService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/watchlist`;
+  private api = inject(ApiService);
+  private endpoint = '/watchlist';
   private imageBaseUrl = 'https://image.tmdb.org/t/p/';
   private storageKey = 'stream-watchlist';
   private itemsSubject = new BehaviorSubject<WatchlistItem[]>(this.loadFromStorage());
@@ -110,8 +109,9 @@ export class WatchlistService {
   }
 
   private shouldFallbackToLocal(error: unknown): boolean {
-    if (!(error instanceof HttpErrorResponse)) return false;
-    return error.status === 0 || error.status === 401 || error.status === 403;
+    const msg = error instanceof Error ? error.message : '';
+    // ApiService throws Error with status inside
+    return msg.includes('Error: 0') || msg.includes('Error: 401') || msg.includes('Error: 403');
   }
 
   private normalizeIncomingItem(item: Partial<WatchlistItem>): WatchlistItem {
@@ -145,8 +145,8 @@ export class WatchlistService {
     if (this.hasTriedServerSync) return;
     this.hasTriedServerSync = true;
 
-    this.http
-      .get<{ watchlist: WatchlistItem[] }>(this.apiUrl)
+    this.api
+      .get<{ watchlist: WatchlistItem[] }>(this.endpoint)
       .pipe(
         map((response) => response.watchlist.map((item) => this.normalizeIncomingItem(item))),
         catchError((error) => {
@@ -194,6 +194,12 @@ export class WatchlistService {
     return `${this.imageBaseUrl}${size}${path}`;
   }
 
+  getBackdropUrl(path: string | undefined): string {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    return `${this.imageBaseUrl}original${path}`;
+  }
+
   getWatchlist(status?: string): Observable<WatchlistItem[]> {
     this.syncFromServerOnce();
 
@@ -212,7 +218,7 @@ export class WatchlistService {
       return throwError(() => new Error('Item already in watchlist'));
     }
 
-    return this.http.post<{ message: string; item: WatchlistItem }>(this.apiUrl, item).pipe(
+    return this.api.post<{ message: string; item: WatchlistItem }>(this.endpoint, item).pipe(
       map((response) => this.normalizeIncomingItem(response.item)),
       tap((added) => this.upsertItem(added)),
       catchError((error) => {
@@ -230,8 +236,8 @@ export class WatchlistService {
     contentId: string,
     updates: Partial<WatchlistItem>,
   ): Observable<WatchlistItem> {
-    return this.http
-      .put<{ message: string; item: WatchlistItem }>(`${this.apiUrl}/${contentId}`, updates)
+    return this.api
+      .put<{ message: string; item: WatchlistItem }>(`${this.endpoint}/${contentId}`, updates)
       .pipe(
         map((response) => this.normalizeIncomingItem(response.item)),
         tap((updated) => this.upsertItem(updated)),
@@ -259,7 +265,7 @@ export class WatchlistService {
   }
 
   removeWatchlistItem(contentId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${contentId}`).pipe(
+    return this.api.delete<void>(`${this.endpoint}/${contentId}`).pipe(
       tap(() => this.removeItem(contentId)),
       catchError((error) => {
         if (!this.shouldFallbackToLocal(error)) {
@@ -275,7 +281,7 @@ export class WatchlistService {
   getStats(): Observable<WatchlistStats> {
     const localStats = this.buildStats(this.itemsSubject.value);
 
-    return this.http.get<{ stats: any }>(`${this.apiUrl}/stats`).pipe(
+    return this.api.get<{ stats: any }>(`${this.endpoint}/stats`).pipe(
       map((response) => this.normalizeStats(response.stats)),
       catchError((error) => {
         if (!this.shouldFallbackToLocal(error)) {

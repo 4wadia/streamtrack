@@ -49,7 +49,7 @@ import { AuthService } from '../services/auth.service';
 
           @if (errorMessage()) {
             <p
-              class="text-[12px] text-red-600 border border-red-200 bg-red-50 rounded-lg px-3 py-2"
+              class="text-[12px] text-[#1d1d1f] border border-[#e2e2e7] bg-[#fcfcfd] rounded-lg px-3 py-2"
             >
               {{ errorMessage() }}
             </p>
@@ -83,7 +83,7 @@ export class LoginComponent {
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
 
-  login(event: Event): void {
+  async login(event: Event): Promise<void> {
     event.preventDefault();
     if (this.isSubmitting()) {
       return;
@@ -93,7 +93,7 @@ export class LoginComponent {
     this.errorMessage.set(null);
 
     try {
-      this.authService.login({ email: this.email, password: this.password });
+      await this.authService.login({ email: this.email, password: this.password });
       void this.router.navigateByUrl('/');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to login right now.';

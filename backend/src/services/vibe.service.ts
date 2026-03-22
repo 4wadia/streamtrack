@@ -141,7 +141,7 @@ class VibeService {
         let filteredResults = results;
         if (vibe.excludeGenres && vibe.excludeGenres.length > 0) {
             filteredResults = results.filter(item =>
-                !item.genreIds.some(g => vibe.excludeGenres!.includes(g))
+                !item.genre_ids.some(g => vibe.excludeGenres!.includes(g))
             );
         }
 

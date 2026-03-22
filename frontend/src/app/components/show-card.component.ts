@@ -41,9 +41,9 @@ const PROVIDER_LABELS: Record<string, string> = {
           />
 
           <span
-            class="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-amber-300 px-2 py-1 text-[10px] font-semibold text-black"
+            class="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[#1d1d1f] px-2 py-1 text-[10px] font-semibold text-white font-mono"
           >
-            <lucide-icon name="star" class="h-3 w-3 fill-black"></lucide-icon>
+            <lucide-icon name="star" class="h-3 w-3 fill-white"></lucide-icon>
             {{ rating() }}
           </span>
 
@@ -54,12 +54,12 @@ const PROVIDER_LABELS: Record<string, string> = {
             class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm transition-colors disabled:cursor-not-allowed"
             [ngClass]="
               isAdded()
-                ? 'bg-emerald-500 text-white border-emerald-500'
+                ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
                 : 'hover:bg-black hover:text-white'
             "
           >
             @if (isAdding()) {
-              <lucide-icon name="activity" class="h-4 w-4 animate-spin"></lucide-icon>
+              <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
             } @else if (isAdded()) {
               <lucide-icon name="check" class="h-4 w-4"></lucide-icon>
             } @else {

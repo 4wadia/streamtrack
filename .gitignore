@@ -9,6 +9,7 @@ node_modules/
 
 # Firebase
 serviceAccountKey.json
+streamtrack-b2c0c-firebase-adminsdk-fbsvc-9cbc66f8dc.json
 firebase-debug.log
 
 # Build outputs

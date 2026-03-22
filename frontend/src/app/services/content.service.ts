@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { ApiService } from './api.service';
 
 export interface ContentItem {
   id: number | string;
@@ -40,9 +39,9 @@ export interface PagedContentResponse {
   providedIn: 'root',
 })
 export class ContentService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/content`;
-  private discoverUrl = `${environment.apiUrl}/discover`;
+  private api = inject(ApiService);
+  private contentPath = '/content';
+  private discoverPath = '/discover';
 
   getTrending(
     type: 'movie' | 'tv' | 'all' = 'all',
@@ -56,8 +55,8 @@ export class ContentService {
     time: 'day' | 'week' = 'week',
     page = 1,
   ): Observable<PagedContentResponse> {
-    return this.http
-      .get<PagedContentResponse>(`${this.apiUrl}/trending?type=${type}&time=${time}&page=${page}`)
+    return this.api
+      .get<PagedContentResponse>(`${this.contentPath}/trending?type=${type}&time=${time}&page=${page}`)
       .pipe(
         map((res) => ({
           ...res,
@@ -75,8 +74,8 @@ export class ContentService {
     type: 'movie' | 'tv' | 'all' = 'all',
   ): Observable<PagedContentResponse> {
     const encoded = encodeURIComponent(query);
-    return this.http
-      .get<PagedContentResponse>(`${this.apiUrl}/search?q=${encoded}&page=${page}&type=${type}`)
+    return this.api
+      .get<PagedContentResponse>(`${this.contentPath}/search?q=${encoded}&page=${page}&type=${type}`)
       .pipe(
         map((res) => ({
           ...res,
@@ -89,8 +88,8 @@ export class ContentService {
   }
 
   getCatalogPage(type: 'movie' | 'tv', page = 1): Observable<PagedContentResponse> {
-    return this.http
-      .get<PagedContentResponse>(`${this.apiUrl}/catalog?type=${type}&page=${page}`)
+    return this.api
+      .get<PagedContentResponse>(`${this.contentPath}/catalog?type=${type}&page=${page}`)
       .pipe(
         map((res) => ({
           ...res,
@@ -107,7 +106,7 @@ export class ContentService {
   }
 
   getAnimePage(page = 1): Observable<PagedContentResponse> {
-    return this.http.get<PagedContentResponse>(`${this.apiUrl}/anime?page=${page}`).pipe(
+    return this.api.get<PagedContentResponse>(`${this.contentPath}/anime?page=${page}`).pipe(
       map((res) => ({
         ...res,
         results: res.results.map((item) => ({
@@ -119,7 +118,7 @@ export class ContentService {
   }
 
   getDetails(type: 'movie' | 'tv', id: number): Observable<ContentItem> {
-    return this.http.get<{ content: ContentItem }>(`${this.apiUrl}/${type}/${id}`).pipe(
+    return this.api.get<{ content: ContentItem }>(`${this.contentPath}/${type}/${id}`).pipe(
       map((res) => ({
         ...res.content,
         type: res.content.type || type,
@@ -128,7 +127,7 @@ export class ContentService {
   }
 
   getTonightPick(): Observable<{ pick: ContentItem; reason: string }> {
-    return this.http.get<{ pick: ContentItem; reason: string }>(`${this.discoverUrl}/tonight`);
+    return this.api.get<{ pick: ContentItem; reason: string }>(`${this.discoverPath}/tonight`);
   }
 
   getPopular(type: 'movie' | 'tv'): Observable<ContentItem[]> {

@@ -1,4 +1,16 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, signal, inject } from '@angular/core';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  User as FirebaseUser
+} from 'firebase/auth';
+import { environment } from '../../environments/environment';
+import { ApiService } from './api.service';
+import { firstValueFrom } from 'rxjs';
 
 export interface AuthUser {
   id: string;
@@ -7,173 +19,102 @@ export interface AuthUser {
   createdAt: string;
 }
 
-interface StoredAuthUser extends AuthUser {
-  password: string;
-}
-
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private usersStorageKey = 'stream-auth-users';
-  private sessionStorageKey = 'stream-auth-session';
-
-  private currentUserSignal = signal<AuthUser | null>(this.restoreSession());
-
+  private api = inject(ApiService);
+  
+  private currentUserSignal = signal<AuthUser | null>(null);
+  private firebaseUserSignal = signal<FirebaseUser | null>(null);
+  private isInitializedSignal = signal<boolean>(false);
+  private authUnavailableSignal = signal<boolean>(false);
+  
   currentUser = computed(() => this.currentUserSignal());
   isAuthenticated = computed(() => !!this.currentUserSignal());
+  isInitialized = computed(() => this.isInitializedSignal());
+  isAuthUnavailable = computed(() => this.authUnavailableSignal());
 
-  signup(payload: { name: string; email: string; password: string }): AuthUser {
-    const name = payload.name.trim();
-    const email = this.normalizeEmail(payload.email);
-    const password = payload.password;
+  constructor() {
+    // Initialize Firebase
+    const app = getApps().length === 0 ? initializeApp(environment.firebase) : getApp();
+    const auth = getAuth(app);
 
-    if (!name) {
-      throw new Error('Name is required.');
-    }
-
-    if (!this.isValidEmail(email)) {
-      throw new Error('Please enter a valid email address.');
-    }
-
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters.');
-    }
-
-    const users = this.loadUsers();
-    if (users.some((user) => user.email === email)) {
-      throw new Error('An account with this email already exists.');
-    }
-
-    const user: StoredAuthUser = {
-      id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      name,
-      email,
-      password,
-      createdAt: new Date().toISOString(),
-    };
-
-    users.push(user);
-    this.saveUsers(users);
-    this.setSession(user.id);
-    this.currentUserSignal.set(this.toAuthUser(user));
-
-    return this.toAuthUser(user);
+    // Listen to Firebase Auth state changes
+    onAuthStateChanged(auth, async (user: FirebaseUser | null) => {
+      this.firebaseUserSignal.set(user);
+      if (user) {
+        // Sync with backend
+        try {
+          const res = await firstValueFrom(this.api.get<{ user: AuthUser }>('/auth/me'));
+          if (res && res.user) {
+            this.currentUserSignal.set(res.user);
+            this.authUnavailableSignal.set(false);
+          }
+        } catch (error: any) {
+          // Silently handle auth service unavailable - enable guest mode
+          if (error?.status === 503 || error?.status === 401 || !error) {
+            console.warn('Auth service unavailable, running in guest/browse-only mode');
+            this.authUnavailableSignal.set(true);
+          } else {
+            console.error('Failed to fetch user from backend', error);
+          }
+        }
+      } else {
+        this.currentUserSignal.set(null);
+      }
+      this.isInitialLoadDone = true;
+      this.isInitializedSignal.set(true);
+    });
   }
 
-  login(payload: { email: string; password: string }): AuthUser {
-    const email = this.normalizeEmail(payload.email);
-    const password = payload.password;
-
-    if (!this.isValidEmail(email)) {
-      throw new Error('Please enter a valid email address.');
-    }
-
-    if (!password) {
-      throw new Error('Password is required.');
-    }
-
-    const user = this.loadUsers().find((existing) => existing.email === email);
-    if (!user || user.password !== password) {
-      throw new Error('Invalid email or password.');
-    }
-
-    this.setSession(user.id);
-    this.currentUserSignal.set(this.toAuthUser(user));
-    return this.toAuthUser(user);
+  private isInitialLoadDone = false;
+  async waitForInit(): Promise<void> {
+    if (this.isInitialLoadDone) return;
+    
+    return new Promise((resolve) => {
+      const auth = getAuth();
+      const unsubscribe = onAuthStateChanged(auth, () => {
+        unsubscribe();
+        resolve();
+      });
+    });
   }
 
-  logout(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(this.sessionStorageKey);
-    }
+  async signup(payload: { name: string; email: string; password: string }): Promise<AuthUser> {
+    const auth = getAuth();
+    const { user } = await createUserWithEmailAndPassword(auth, payload.email, payload.password);
+    
+    // The authInterceptor will handle attaching the token to the request
+    // But since the interceptor waits for getToken(), this will work contextually.
+    const response = await firstValueFrom(this.api.post<{ user: AuthUser, message: string }>('/auth/register', {
+      name: payload.name.trim()
+    }));
+    
+    this.currentUserSignal.set(response.user);
+    return response.user;
+  }
+
+  async login(payload: { email: string; password: string }): Promise<AuthUser> {
+    const auth = getAuth();
+    const { user } = await signInWithEmailAndPassword(auth, payload.email, payload.password);
+    
+    const response = await firstValueFrom(this.api.post<{ user: AuthUser, message: string }>('/auth/login', {}));
+    this.currentUserSignal.set(response.user);
+    return response.user;
+  }
+
+  async logout(): Promise<void> {
+    const auth = getAuth();
+    await signOut(auth);
     this.currentUserSignal.set(null);
   }
 
-  private restoreSession(): AuthUser | null {
-    if (typeof window === 'undefined') {
-      return null;
+  async getToken(): Promise<string | null> {
+    const user = getAuth().currentUser;
+    if (user) {
+      return await user.getIdToken();
     }
-
-    const userId = localStorage.getItem(this.sessionStorageKey);
-    if (!userId) {
-      return null;
-    }
-
-    const user = this.loadUsers().find((item) => item.id === userId);
-    if (!user) {
-      localStorage.removeItem(this.sessionStorageKey);
-      return null;
-    }
-
-    return this.toAuthUser(user);
-  }
-
-  private loadUsers(): StoredAuthUser[] {
-    if (typeof window === 'undefined') {
-      return [];
-    }
-
-    const raw = localStorage.getItem(this.usersStorageKey);
-    if (!raw) {
-      return [];
-    }
-
-    try {
-      const parsed = JSON.parse(raw) as unknown;
-      if (!Array.isArray(parsed)) {
-        return [];
-      }
-
-      return parsed.filter(this.isStoredAuthUser);
-    } catch {
-      return [];
-    }
-  }
-
-  private saveUsers(users: StoredAuthUser[]): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    localStorage.setItem(this.usersStorageKey, JSON.stringify(users));
-  }
-
-  private setSession(userId: string): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    localStorage.setItem(this.sessionStorageKey, userId);
-  }
-
-  private normalizeEmail(email: string): string {
-    return email.trim().toLowerCase();
-  }
-
-  private isValidEmail(email: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
-
-  private toAuthUser(user: StoredAuthUser): AuthUser {
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      createdAt: user.createdAt,
-    };
-  }
-
-  private isStoredAuthUser(value: unknown): value is StoredAuthUser {
-    if (!value || typeof value !== 'object') {
-      return false;
-    }
-
-    const user = value as Partial<StoredAuthUser>;
-    return (
-      typeof user.id === 'string' &&
-      typeof user.name === 'string' &&
-      typeof user.email === 'string' &&
-      typeof user.password === 'string' &&
-      typeof user.createdAt === 'string'
-    );
+    return null;
   }
 }
