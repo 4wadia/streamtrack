@@ -76,7 +76,7 @@ import { AuthService } from '../services/auth.service';
 
           @if (errorMessage()) {
             <p
-              class="text-[12px] text-red-600 border border-red-200 bg-red-50 rounded-lg px-3 py-2"
+              class="text-[12px] text-[#1d1d1f] border border-[#e2e2e7] bg-[#fcfcfd] rounded-lg px-3 py-2"
             >
               {{ errorMessage() }}
             </p>
