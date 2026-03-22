@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { animate, group, query, style, transition, trigger } from '@angular/animations';
 import { HeaderComponent } from './components/header.component';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
 
 const SLIDE_TIMING = '450ms cubic-bezier(0.22, 1, 0.36, 1)';
 
@@ -78,9 +80,11 @@ const SLIDE_TIMING = '450ms cubic-bezier(0.22, 1, 0.36, 1)';
     <div
       class="min-h-screen bg-[#fafafa] text-black font-['Inter',sans-serif] selection:bg-black/10 selection:text-black pb-20 antialiased"
     >
-      <app-header></app-header>
+      @if (!isLandingPage()) {
+        <app-header></app-header>
+      }
 
-      <main class="relative z-10 mx-auto w-full max-w-[1440px] px-6 pt-6 lg:px-16 lg:pt-8">
+      <main [class]="isLandingPage() ? 'relative z-10 mx-auto w-full max-w-[1440px]' : 'relative z-10 mx-auto w-full max-w-[1440px] px-6 pt-6 lg:px-16 lg:pt-8'">
         <div
           class="route-slide-shell relative min-h-[60vh] overflow-x-hidden"
           [class.disable-reveal]="isSlideOnlyRoute(outlet)"
@@ -93,6 +97,15 @@ const SLIDE_TIMING = '450ms cubic-bezier(0.22, 1, 0.36, 1)';
   `,
 })
 export class AppComponent {
+  private router = inject(Router);
+  
+  isLandingPage = toSignal(
+    this.router.events.pipe(
+      map(() => this.router.url === '/')
+    ),
+    { initialValue: this.router.url === '/' }
+  );
+
   prepareRoute(outlet: RouterOutlet): string {
     return (outlet.activatedRouteData?.['animation'] as string) || 'other';
   }

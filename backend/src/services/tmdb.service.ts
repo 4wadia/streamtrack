@@ -119,13 +119,15 @@ export interface ContentItem {
     tmdbId: number;
     type: 'movie' | 'tv';
     title: string;
+    name?: string;
     overview: string;
-    posterPath: string | null;
-    backdropPath: string | null;
-    releaseDate: string;
-    rating: number;
-    voteCount: number;
-    genreIds: number[];
+    poster_path: string | null;
+    backdrop_path: string | null;
+    release_date?: string;
+    first_air_date?: string;
+    vote_average: number;
+    vote_count: number;
+    genre_ids: number[];
     genres?: string[];
     runtime?: number;
     watchProviders?: string[];
@@ -133,6 +135,8 @@ export interface ContentItem {
 
 class TMDBService {
     private apiKey: string;
+    private readAccessToken: string;
+    private isV4Token: boolean;
     private baseUrl = 'https://api.themoviedb.org/3';
     private imageBaseUrl = 'https://image.tmdb.org/t/p';
     private cache = new LRUCache<any>(200);
@@ -140,16 +144,69 @@ class TMDBService {
 
     constructor() {
         this.apiKey = process.env.TMDB_API_KEY || '';
-        if (!this.apiKey) {
-            console.warn('⚠️ TMDB_API_KEY not set - content features will not work');
+        this.readAccessToken = process.env.TMDB_READ_ACCESS_TOKEN || '';
+        // Prefer read access token (v4) over API key (v3)
+        const effectiveToken = this.readAccessToken || this.apiKey;
+        // JWT tokens (v4) are much longer than v3 hex keys (32 chars)
+        this.isV4Token = effectiveToken.length > 40;
+        if (!effectiveToken) {
+            console.warn('⚠️ TMDB_API_KEY or TMDB_READ_ACCESS_TOKEN not set - content features will not work');
         }
     }
 
+    private async fetchWithRetry<T>(url: string, options: RequestInit, maxRetries = 3): Promise<T> {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`🎬 TMDB API Request [${attempt}/${maxRetries}]: ${options.method || 'GET'} ${url}`);
+                
+                const response = await fetch(url, {
+                    ...options,
+                    signal: AbortSignal.timeout(10000) // 10-second timeout
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    const error = new Error(`TMDB API error: ${response.status} ${response.statusText} - ${errorText}`);
+                    console.error(`❌ TMDB API Error [${attempt}/${maxRetries}]:`, {
+                        status: response.status,
+                        statusText: response.statusText,
+                        url,
+                        errorText
+                    });
+                    throw error;
+                }
+
+                console.log(`✅ TMDB API Success [${attempt}/${maxRetries}]: ${response.status} ${url}`);
+                return await response.json() as T;
+            } catch (error) {
+                console.error(`❌ TMDB Fetch Error [${attempt}/${maxRetries}]:`, {
+                    url,
+                    error: error instanceof Error ? error.message : String(error),
+                    stack: error instanceof Error ? error.stack : undefined
+                });
+
+                if (attempt === maxRetries) {
+                    throw new Error(`TMDB API failed after ${maxRetries} attempts: ${error instanceof Error ? error.message : String(error)}`);
+                }
+
+                // Exponential backoff: 500ms, 1000ms, 2000ms
+                const delay = 500 * Math.pow(2, attempt - 1);
+                console.log(`⏳ Retrying TMDB request in ${delay}ms... [${attempt}/${maxRetries}]`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+        
+        throw new Error('TMDB fetchWithRetry failed unexpectedly');
+    }
+
     private async fetch<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
-        const queryParams = new URLSearchParams({
-            api_key: this.apiKey,
-            ...params
-        });
+        const queryParams = new URLSearchParams(params);
+        const effectiveToken = this.readAccessToken || this.apiKey;
+
+        // For v3 keys, pass as query param; for v4 tokens, use Authorization header
+        if (!this.isV4Token) {
+            queryParams.set('api_key', effectiveToken);
+        }
 
         const url = `${this.baseUrl}${endpoint}?${queryParams}`;
         const cacheKey = url;
@@ -157,16 +214,19 @@ class TMDBService {
         // Check cache
         const cached = this.cache.get(cacheKey);
         if (cached) {
+            console.log(`🎯 TMDB Cache Hit: ${endpoint}`);
             return cached as T;
         }
 
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
+        const headers: Record<string, string> = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+        if (this.isV4Token) {
+            headers['Authorization'] = `Bearer ${effectiveToken}`;
         }
 
-        const data = await response.json() as T;
+        const data = await this.fetchWithRetry<T>(url, { headers });
         this.cache.set(cacheKey, data);
         return data;
     }
@@ -310,13 +370,15 @@ class TMDBService {
             tmdbId: item.id,
             type,
             title: isMovie ? (item as TMDBMovie).title : (item as TMDBTVShow).name,
+            name: !isMovie ? (item as TMDBTVShow).name : undefined,
             overview: item.overview,
-            posterPath: item.poster_path ? `${this.imageBaseUrl}/w500${item.poster_path}` : null,
-            backdropPath: item.backdrop_path ? `${this.imageBaseUrl}/w1280${item.backdrop_path}` : null,
-            releaseDate: isMovie ? (item as TMDBMovie).release_date : (item as TMDBTVShow).first_air_date,
-            rating: Math.round(item.vote_average * 10) / 10,
-            voteCount: item.vote_count,
-            genreIds: item.genre_ids
+            poster_path: item.poster_path ? `${this.imageBaseUrl}/w500${item.poster_path}` : null,
+            backdrop_path: item.backdrop_path ? `${this.imageBaseUrl}/w1280${item.backdrop_path}` : null,
+            release_date: isMovie ? (item as TMDBMovie).release_date : undefined,
+            first_air_date: !isMovie ? (item as TMDBTVShow).first_air_date : undefined,
+            vote_average: Math.round(item.vote_average * 10) / 10,
+            vote_count: item.vote_count,
+            genre_ids: item.genre_ids
         };
     }
 
@@ -335,13 +397,15 @@ class TMDBService {
             tmdbId: item.id,
             type,
             title: isMovie ? item.title! : item.name!,
+            name: !isMovie ? item.name : undefined,
             overview: item.overview,
-            posterPath: item.poster_path ? `${this.imageBaseUrl}/w500${item.poster_path}` : null,
-            backdropPath: item.backdrop_path ? `${this.imageBaseUrl}/w1280${item.backdrop_path}` : null,
-            releaseDate: isMovie ? item.release_date! : item.first_air_date!,
-            rating: Math.round(item.vote_average * 10) / 10,
-            voteCount: item.vote_count,
-            genreIds: item.genres.map(g => g.id),
+            poster_path: item.poster_path ? `${this.imageBaseUrl}/w500${item.poster_path}` : null,
+            backdrop_path: item.backdrop_path ? `${this.imageBaseUrl}/w1280${item.backdrop_path}` : null,
+            release_date: isMovie ? item.release_date : undefined,
+            first_air_date: !isMovie ? item.first_air_date : undefined,
+            vote_average: Math.round(item.vote_average * 10) / 10,
+            vote_count: item.vote_count,
+            genre_ids: item.genres.map(g => g.id),
             genres: item.genres.map(g => g.name),
             runtime: isMovie ? item.runtime : item.episode_run_time?.[0],
             watchProviders

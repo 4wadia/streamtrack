@@ -12,8 +12,18 @@ import { ContentDetailsModalComponent } from './content-details-modal.component'
   imports: [CommonModule, LucideAngularModule, ContentDetailsModalComponent],
   template: `
     <section class="relative mb-[100px] flex items-center min-h-[500px] overflow-hidden">
+      <!-- Background with backdrop image and white overlay -->
+      <div class="absolute inset-0 z-0">
+        <img
+          [src]="watchlistService.getBackdropUrl(pick()?.backdrop_path)"
+          [alt]="pick()?.title || ''"
+          class="w-full h-full object-cover"
+        />
+        <div class="absolute inset-0 bg-white/60"></div>
+      </div>
+
       <div
-        class="max-w-[1200px] mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-6"
+        class="relative z-10 max-w-[1200px] mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-6"
       >
         <!-- Left Content -->
         <div class="reveal delay-1">
@@ -24,8 +34,8 @@ import { ContentDetailsModalComponent } from './content-details-modal.component'
           <h1
             class="text-6xl md:text-[5.5rem] font-light leading-[1.05] tracking-[-3px] mb-8 text-black transition-all duration-500"
             [ngClass]="{ 'opacity-0 translate-y-4': !pick() }"
+            [innerHTML]="formatTitle(pick()?.title || pick()?.name || 'Loading...')"
           >
-            {{ formatTitle(pick()?.title || pick()?.name || 'Loading...') }}
           </h1>
 
           <div
@@ -57,17 +67,17 @@ import { ContentDetailsModalComponent } from './content-details-modal.component'
               class="relative border-none px-10 py-5 font-mono text-[10px] font-bold cursor-pointer transition-all duration-300 rounded-none flex items-center justify-center gap-3 uppercase tracking-[2px] overflow-hidden disabled:cursor-not-allowed"
               [ngClass]="
                 isPickAdded()
-                  ? 'bg-emerald-600 text-white'
+                  ? 'bg-[#1d1d1f] text-white'
                   : 'bg-black text-white hover:bg-black/80'
               "
             >
               @if (showTickPulse()) {
-                <span class="absolute inset-0 bg-emerald-300/40 animate-ping"></span>
+                <span class="absolute inset-0 bg-[#8e8e93]/40 animate-ping"></span>
               }
 
               <span class="relative flex items-center gap-3">
                 @if (isAddingToWatchlist()) {
-                  <lucide-icon name="activity" class="w-4 h-4 animate-spin"></lucide-icon>
+                  <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                   ADDING...
                 } @else if (isPickAdded()) {
                   <lucide-icon name="check" class="w-4 h-4"></lucide-icon>
@@ -120,12 +130,30 @@ export class HeroComponent implements OnInit {
   ngOnInit() {
     this.contentService.getTonightPick().subscribe({
       next: (data) => {
+        if (!data.pick) {
+          this.loadFallbackTrending();
+          return;
+        }
         this.pick.set(data.pick);
         this.isPickAdded.set(false);
         this.isAddingToWatchlist.set(false);
         this.showTickPulse.set(false);
       },
-      error: (err) => console.error('Error fetching Tonight Pick:', err),
+      error: () => {
+        this.loadFallbackTrending();
+      },
+    });
+  }
+
+  private loadFallbackTrending() {
+    this.contentService.getTrending('all', 'week').subscribe({
+      next: (items) => {
+        if (items.length > 0) {
+          const randomIndex = Math.floor(Math.random() * Math.min(items.length, 5));
+          this.pick.set(items[randomIndex]);
+        }
+      },
+      error: (err) => console.error('Error fetching fallback trending:', err),
     });
   }
 

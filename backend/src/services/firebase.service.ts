@@ -64,3 +64,19 @@ export async function verifyIdToken(idToken: string): Promise<DecodedIdToken | n
 export function isFirebaseInitialized(): boolean {
     return initialized;
 }
+
+export function getFirebaseInitializationError(): string | null {
+    if (initialized) return null;
+    
+    const serviceAccountFromEnv = getServiceAccountFromEnv();
+    if (serviceAccountFromEnv) return null;
+    
+    const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './serviceAccountKey.json';
+    const absolutePath = path.resolve(process.cwd(), serviceAccountPath);
+    
+    if (!fs.existsSync(absolutePath)) {
+        return `Firebase service account file not found at: ${absolutePath}. Please set FIREBASE_SERVICE_ACCOUNT_PATH or FIREBASE_SERVICE_ACCOUNT_JSON environment variable.`;
+    }
+    
+    return 'Firebase Admin initialization failed for unknown reason';
+}

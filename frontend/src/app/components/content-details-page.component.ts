@@ -1,69 +1,27 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { Subscription, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { ContentItem, ContentService } from '../services/content.service';
 import { WatchlistService } from '../services/watchlist.service';
 
 interface ProviderUi {
   id: string;
   label: string;
-  short: string;
   colorClass: string;
-  urlBase: string;
 }
 
 const PROVIDER_UI: Record<string, ProviderUi> = {
-  netflix: {
-    id: 'netflix',
-    label: 'Netflix',
-    short: 'N',
-    colorClass: 'bg-[#e50914] text-white',
-    urlBase: 'https://www.netflix.com/search?q=',
-  },
-  prime: {
-    id: 'prime',
-    label: 'Prime Video',
-    short: 'PV',
-    colorClass: 'bg-[#00a8e1] text-white',
-    urlBase: 'https://www.primevideo.com/search/ref=atv_nb_sr?phrase=',
-  },
-  jiohotstar: {
-    id: 'jiohotstar',
-    label: 'JioHotstar',
-    short: 'JH',
-    colorClass: 'bg-[#0a1f44] text-white',
-    urlBase: 'https://www.hotstar.com/in/search?q=',
-  },
-  hbo: {
-    id: 'hbo',
-    label: 'Max',
-    short: 'MAX',
-    colorClass: 'bg-[#1f0f4f] text-white',
-    urlBase: 'https://play.max.com/search?q=',
-  },
-  hulu: {
-    id: 'hulu',
-    label: 'Hulu',
-    short: 'H',
-    colorClass: 'bg-[#1ce783] text-black',
-    urlBase: 'https://www.hulu.com/search?q=',
-  },
-  apple: {
-    id: 'apple',
-    label: 'Apple TV+',
-    short: 'tv+',
-    colorClass: 'bg-black text-white',
-    urlBase: 'https://tv.apple.com/search?term=',
-  },
-  paramount: {
-    id: 'paramount',
-    label: 'Paramount+',
-    short: 'P+',
-    colorClass: 'bg-[#0055ff] text-white',
-    urlBase: 'https://www.paramountplus.com/search/?query=',
-  },
+  netflix: { id: 'netflix', label: 'Netflix', colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]' },
+  prime: { id: 'prime', label: 'Prime Video', colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]' },
+  jiohotstar: { id: 'jiohotstar', label: 'JioHotstar', colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]' },
+  hbo: { id: 'hbo', label: 'Max', colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]' },
+  hulu: { id: 'hulu', label: 'Hulu', colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]' },
+  apple: { id: 'apple', label: 'Apple TV+', colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]' },
+  paramount: { id: 'paramount', label: 'Paramount+', colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]' },
+  zee5: { id: 'zee5', label: 'ZEE5', colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]' },
+  sonyliv: { id: 'sonyliv', label: 'SonyLIV', colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]' },
 };
 
 @Component({
@@ -71,231 +29,244 @@ const PROVIDER_UI: Record<string, ProviderUi> = {
   standalone: true,
   imports: [CommonModule, RouterLink, LucideAngularModule],
   template: `
-    <section class="py-2">
-      <div class="flex items-center justify-between mb-8">
-        <div>
-          <p class="text-[10px] font-mono text-black/40 uppercase tracking-[0.3em] mb-2">Details</p>
-          <h1 class="text-3xl font-bold tracking-tight text-black">{{ pageTitle() }}</h1>
-        </div>
+    <div class="min-h-screen bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <a
-          routerLink="/"
-          class="text-[11px] font-mono text-black/60 uppercase tracking-widest hover:text-black transition-colors no-underline"
-          >Back to Home</a
+          [routerLink]="['/home']"
+          class="inline-flex items-center gap-2 text-sm text-black/60 hover:text-black mb-6 transition-colors"
         >
-      </div>
+          <lucide-icon name="arrow-left" class="h-4 w-4"></lucide-icon>
+          Back to Home
+        </a>
 
-      @if (isLoading()) {
-        <div class="py-16 text-center text-black/60 font-mono text-sm uppercase tracking-widest">
-          Loading details...
-        </div>
-      } @else if (errorMessage()) {
-        <div
-          class="py-16 text-center text-black/60 font-mono text-sm uppercase tracking-widest border border-black/10 rounded-2xl"
-        >
-          {{ errorMessage() }}
-        </div>
-      } @else if (content(); as item) {
-        <article
-          class="rounded-3xl overflow-hidden border border-black/10 bg-white shadow-sm reveal"
-        >
-          <div class="relative h-[260px] md:h-[380px] border-b border-black/10">
-            <img
-              [src]="
-                watchlistService.getImageUrl(item.backdrop_path || item.poster_path, 'original')
-              "
-              [alt]="item.title || item.name"
-              class="w-full h-full object-cover"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent"
-            ></div>
-
-            <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 flex items-end gap-5">
+        @if (isLoading()) {
+          <div class="flex items-center justify-center py-20">
+            <div class="flex flex-col items-center gap-4">
+              <div class="animate-spin rounded-full h-8 w-8 border-4 border-[#1d1d1f] border-t-transparent"></div>
+              <span class="text-xs font-mono uppercase tracking-widest text-black/50">Loading...</span>
+            </div>
+          </div>
+        } @else if (errorMessage()) {
+          <div class="flex flex-col items-center justify-center py-20 px-6 text-center">
+            <lucide-icon name="alert-circle" class="h-10 w-10 text-black/30 mb-4"></lucide-icon>
+            <p class="text-sm text-black/60 mb-2">{{ errorMessage() }}</p>
+            <a
+              [routerLink]="['/home']"
+              class="mt-4 text-xs font-mono uppercase tracking-widest text-black/50 hover:text-black transition-colors"
+            >
+              Go Home
+            </a>
+          </div>
+        } @else if (content(); as detail) {
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+            <div class="lg:col-span-1">
               <img
-                [src]="watchlistService.getImageUrl(item.poster_path)"
-                [alt]="item.title || item.name"
-                class="hidden md:block w-28 aspect-[2/3] object-cover rounded-xl border border-white/20 shadow-xl"
+                [src]="watchlistService.getImageUrl(detail.poster_path)"
+                [alt]="detail.title || detail.name"
+                class="w-full max-w-sm mx-auto lg:mx-0 aspect-[2/3] object-cover rounded-xl shadow-lg"
               />
+            </div>
 
-              <div class="text-white flex-1">
-                <p class="font-mono text-[10px] uppercase tracking-widest text-white/70 mb-3">
-                  {{ item.type === 'movie' ? 'Movie' : 'TV Show' }}
-                  @if (releaseYear()) {
-                    <span class="mx-2">-</span>{{ releaseYear() }}
-                  }
-                  @if (item.vote_average) {
-                    <span class="mx-2">-</span>{{ item.vote_average.toFixed(1) }}/10
-                  }
-                  @if (item.runtime) {
-                    <span class="mx-2">-</span>{{ formatRuntime(item.runtime) }}
-                  }
-                </p>
-                <h2 class="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4">
-                  {{ item.title || item.name }}
-                </h2>
-
-                @if (item.genres?.length) {
-                  <div class="flex flex-wrap gap-2">
-                    @for (genre of item.genres; track genre) {
-                      <span
-                        class="px-3 py-1 rounded-full border border-white/25 bg-white/10 text-[10px] font-mono uppercase tracking-wider"
-                      >
-                        {{ genre }}
-                      </span>
-                    }
-                  </div>
+            <div class="lg:col-span-2">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="inline-flex items-center gap-1 rounded-full bg-[#1d1d1f] px-2.5 py-1 text-[11px] font-semibold text-white font-mono">
+                  <lucide-icon name="star" class="h-3 w-3 fill-white"></lucide-icon>
+                  {{ (detail.vote_average || 0).toFixed(1) }}
+                </span>
+                <span class="text-[10px] font-mono uppercase tracking-widest text-black/50">
+                  {{ detail.type === 'movie' ? 'Movie' : 'Series' }}
+                </span>
+                @if (releaseYear()) {
+                  <span class="text-[10px] font-mono uppercase tracking-widest text-black/50">
+                    · {{ releaseYear() }}
+                  </span>
                 }
+              </div>
+
+              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-black mb-6">
+                {{ detail.title || detail.name }}
+              </h1>
+
+              <p class="text-base leading-relaxed text-black/70 mb-8">
+                {{ detail.overview || 'No overview available.' }}
+              </p>
+
+              <div class="mb-8">
+                <h4 class="text-[10px] font-mono uppercase tracking-widest text-black/40 mb-3">
+                  Available On
+                </h4>
+                <div class="flex flex-wrap gap-2">
+                  @for (provider of providers(); track provider.id) {
+                    <span
+                      class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium"
+                      [ngClass]="provider.colorClass"
+                    >
+                      {{ provider.label }}
+                    </span>
+                  }
+                  @if (providers().length === 0) {
+                    <span class="text-xs text-black/40 italic">
+                      No streaming info available
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <button
+                  (click)="addToWatchlist()"
+                  [disabled]="isAddingToWatchlist() || isInWatchlist()"
+                  class="inline-flex items-center gap-2 rounded-full px-6 py-3 text-xs font-mono uppercase tracking-widest transition-all duration-200 disabled:cursor-not-allowed"
+                  [ngClass]="isInWatchlist()
+                    ? 'bg-[#1d1d1f] text-white'
+                    : 'bg-black text-white hover:bg-black/80'"
+                >
+                  @if (isAddingToWatchlist()) {
+                    <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    Adding...
+                  } @else if (isInWatchlist()) {
+                    <lucide-icon name="check" class="h-4 w-4"></lucide-icon>
+                    Added
+                  } @else {
+                    <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+                    Add to Watchlist
+                  }
+                </button>
+
+                <a
+                  [routerLink]="['/watchlist']"
+                  class="inline-flex items-center gap-2 rounded-full px-6 py-3 text-xs font-mono uppercase tracking-widest border border-black/20 text-black/70 hover:bg-black/5 transition-all duration-200"
+                >
+                  <lucide-icon name="bookmark" class="h-4 w-4"></lucide-icon>
+                  View Watchlist
+                </a>
               </div>
             </div>
           </div>
-
-          <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="md:col-span-2">
-              <h3 class="text-[10px] font-mono text-black/50 mb-3 uppercase tracking-widest">
-                Overview
-              </h3>
-              <p class="text-black/80 text-[15px] leading-relaxed">
-                {{ item.overview || 'No overview available yet.' }}
-              </p>
-            </div>
-
-            <div>
-              <h3 class="text-[10px] font-mono text-black/50 mb-3 uppercase tracking-widest">
-                Where to Watch
-              </h3>
-
-              @if (providers().length > 0) {
-                <div class="flex flex-col gap-2">
-                  @for (provider of providers(); track provider.id) {
-                    <button
-                      type="button"
-                      (click)="openProvider(provider)"
-                      class="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border border-black/10 bg-black/[0.03] hover:bg-black/[0.06] transition-colors cursor-pointer"
-                    >
-                      <span class="flex items-center gap-3 min-w-0">
-                        <span
-                          class="w-8 h-8 rounded-md text-[10px] font-mono font-bold uppercase tracking-wide flex items-center justify-center"
-                          [ngClass]="provider.colorClass"
-                        >
-                          {{ provider.short }}
-                        </span>
-                        <span class="text-[13px] text-black font-medium truncate">{{
-                          provider.label
-                        }}</span>
-                      </span>
-                      <lucide-icon
-                        name="external-link"
-                        class="w-3.5 h-3.5 text-black/50"
-                      ></lucide-icon>
-                    </button>
-                  }
-                </div>
-              } @else {
-                <p class="text-black/60 text-[13px] leading-relaxed">
-                  No streaming providers found for this title in your region.
-                </p>
-              }
-            </div>
-          </div>
-        </article>
-      }
-    </section>
+        }
+      </div>
+    </div>
   `,
 })
-export class ContentDetailsPageComponent implements OnInit, OnDestroy {
+export class ContentDetailsPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private contentService = inject(ContentService);
   watchlistService = inject(WatchlistService);
-  private routeSub?: Subscription;
 
   content = signal<ContentItem | null>(null);
-  isLoading = signal(true);
+  isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  isAddingToWatchlist = signal(false);
+  isInWatchlist = signal(false);
 
-  pageTitle = computed(() => {
-    const item = this.content();
-    return item ? `${item.title || item.name} Details` : 'Show Details';
-  });
-
-  releaseYear = computed(() => {
-    const item = this.content();
-    const date = item?.release_date || item?.first_air_date || '';
-    return date.split('-')[0] || '';
-  });
-
-  providers = computed(() => {
-    const providers = this.content()?.watchProviders ?? [];
-    const unique = Array.from(new Set(providers));
-    return unique.map((providerId) => {
-      const mapped = PROVIDER_UI[providerId];
-      if (mapped) {
-        return mapped;
-      }
-
-      return {
-        id: providerId,
-        label: providerId,
-        short: providerId.slice(0, 2).toUpperCase(),
-        colorClass: 'bg-black text-white',
-        urlBase: 'https://www.google.com/search?q=',
-      };
-    });
-  });
+  releaseYear = signal<string>('');
+  providers = signal<ProviderUi[]>([]);
 
   ngOnInit(): void {
-    this.routeSub = this.route.paramMap.subscribe((params) => {
-      const type = params.get('type');
-      const idValue = params.get('id');
-      const tmdbId = Number(idValue);
+    const type = this.route.snapshot.paramMap.get('type');
+    const id = this.route.snapshot.paramMap.get('id');
 
-      if ((type !== 'movie' && type !== 'tv') || !Number.isInteger(tmdbId) || tmdbId <= 0) {
-        this.content.set(null);
-        this.isLoading.set(false);
-        this.errorMessage.set('This title cannot be opened.');
-        return;
-      }
-
-      void this.loadContent(type, tmdbId);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.routeSub?.unsubscribe();
-  }
-
-  formatRuntime(runtimeMinutes: number): string {
-    if (!Number.isFinite(runtimeMinutes) || runtimeMinutes <= 0) {
-      return 'Runtime N/A';
-    }
-
-    const hours = Math.floor(runtimeMinutes / 60);
-    const minutes = runtimeMinutes % 60;
-    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-  }
-
-  openProvider(provider: ProviderUi): void {
-    const title = this.content()?.title || this.content()?.name;
-    if (!title || typeof window === 'undefined') {
+    if (!type || !id) {
+      this.errorMessage.set('Invalid content parameters');
       return;
     }
 
-    const destination = `${provider.urlBase}${encodeURIComponent(title)}`;
-    window.open(destination, '_blank', 'noopener,noreferrer');
+    const tmdbId = this.extractTmdbId(id);
+    if (!tmdbId) {
+      this.errorMessage.set('Invalid content ID');
+      return;
+    }
+
+    void this.loadContent(type as 'movie' | 'tv', tmdbId);
   }
 
-  private async loadContent(type: 'movie' | 'tv', tmdbId: number): Promise<void> {
+  private extractTmdbId(id: string): number | null {
+    if (id.includes('-')) {
+      const parts = id.split('-');
+      const lastPart = parts[parts.length - 1];
+      const num = parseInt(lastPart, 10);
+      return isNaN(num) ? null : num;
+    }
+    const num = parseInt(id, 10);
+    return isNaN(num) ? null : num;
+  }
+
+  private async loadContent(type: 'movie' | 'tv', id: number): Promise<void> {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
     try {
-      const item = await firstValueFrom(this.contentService.getDetails(type, tmdbId));
-      this.content.set(item);
+      const detail = await firstValueFrom(this.contentService.getDetails(type, id));
+      this.content.set(detail);
+
+      const date = detail.release_date || detail.first_air_date || '';
+      this.releaseYear.set(date.split('-')[0] || '');
+
+      const providerIds = detail.watchProviders ?? [];
+      const unique = Array.from(new Set(providerIds));
+      this.providers.set(
+        unique.map((providerId) => {
+          const mapped = PROVIDER_UI[providerId];
+          if (mapped) return mapped;
+          return {
+            id: providerId,
+            label: providerId,
+            colorClass: 'bg-[#e2e2e7] text-[#1d1d1f]',
+          };
+        })
+      );
     } catch (error) {
       console.error('Error loading content details:', error);
-      this.content.set(null);
-      this.errorMessage.set('Failed to load this title right now.');
+      this.errorMessage.set('Could not load content details. Please try again.');
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  addToWatchlist(): void {
+    const detail = this.content();
+    if (!detail || this.isAddingToWatchlist() || this.isInWatchlist()) return;
+
+    this.isAddingToWatchlist.set(true);
+    const contentId = `${detail.type}-${detail.id}`;
+
+    this.watchlistService
+      .addWatchlistItem({
+        contentId,
+        title: detail.title || detail.name || 'Unknown',
+        type: detail.type,
+        posterPath: detail.poster_path,
+        backdropPath: detail.backdrop_path,
+        status: 'want',
+      })
+      .subscribe({
+        next: () => {
+          this.isAddingToWatchlist.set(false);
+          this.isInWatchlist.set(true);
+        },
+        error: (error) => {
+          this.isAddingToWatchlist.set(false);
+          if (this.isAlreadyAddedError(error)) {
+            this.isInWatchlist.set(true);
+            return;
+          }
+          console.error('Error adding to watchlist:', error);
+        },
+      });
+  }
+
+  private isAlreadyAddedError(error: unknown): boolean {
+    const status =
+      typeof (error as { status?: unknown })?.status === 'number'
+        ? (error as { status: number }).status
+        : undefined;
+    const message = [
+      error instanceof Error ? error.message : '',
+      (error as { error?: { error?: string } })?.error?.error || '',
+    ]
+      .join(' ')
+      .toLowerCase();
+    return status === 409 || message.includes('already in watchlist') || message.includes('already added');
   }
 }

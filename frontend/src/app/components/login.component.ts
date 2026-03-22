@@ -83,7 +83,7 @@ export class LoginComponent {
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
 
-  login(event: Event): void {
+  async login(event: Event): Promise<void> {
     event.preventDefault();
     if (this.isSubmitting()) {
       return;
@@ -93,7 +93,7 @@ export class LoginComponent {
     this.errorMessage.set(null);
 
     try {
-      this.authService.login({ email: this.email, password: this.password });
+      await this.authService.login({ email: this.email, password: this.password });
       void this.router.navigateByUrl('/');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to login right now.';

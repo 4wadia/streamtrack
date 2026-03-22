@@ -112,12 +112,19 @@ export class BrowsePageComponent implements OnInit, OnDestroy {
 
     try {
       if (category === 'movies' || category === 'tv') {
-        const loaded = await this.loadAllCatalogPages(
-          category === 'movies' ? 'movie' : 'tv',
-          callId,
-        );
+        this.loadingMessage.set(`Loading ${category === 'movies' ? 'movies' : 'TV shows'}...`);
+        const type = category === 'movies' ? 'movie' : 'tv' as const;
+
+        // Load 3 pages in parallel for fast results (~60 items)
+        const [p1, p2, p3] = await Promise.all([
+          firstValueFrom(this.contentService.getCatalogPage(type, 1)),
+          firstValueFrom(this.contentService.getCatalogPage(type, 2)),
+          firstValueFrom(this.contentService.getCatalogPage(type, 3)),
+        ]);
+
         if (callId !== this.requestId) return;
-        this.items.set(loaded);
+        const allResults = [...p1.results, ...p2.results, ...p3.results];
+        this.items.set(this.uniqueById(allResults));
       } else if (category === 'anime') {
         this.loadingMessage.set('Loading anime picks...');
         const response = await firstValueFrom(this.contentService.getAnimePage(1));
@@ -142,42 +149,6 @@ export class BrowsePageComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async loadAllCatalogPages(type: 'movie' | 'tv', callId: number): Promise<ContentItem[]> {
-    this.loadingMessage.set('Loading page 1...');
-    const firstPage = await firstValueFrom(this.contentService.getCatalogPage(type, 1));
-
-    if (callId !== this.requestId) {
-      return [];
-    }
-
-    const totalPages = Math.max(1, firstPage.totalPages || 1);
-    const allResults: ContentItem[] = [...firstPage.results];
-    const batchSize = 5;
-
-    for (let page = 2; page <= totalPages; page += batchSize) {
-      if (callId !== this.requestId) {
-        return [];
-      }
-
-      const pages = Array.from(
-        { length: Math.min(batchSize, totalPages - page + 1) },
-        (_, index) => page + index,
-      );
-      this.loadingMessage.set(`Loading page ${pages[pages.length - 1]} of ${totalPages}...`);
-
-      const batch = await Promise.all(
-        pages.map((currentPage) =>
-          firstValueFrom(this.contentService.getCatalogPage(type, currentPage)),
-        ),
-      );
-
-      for (const response of batch) {
-        allResults.push(...response.results);
-      }
-    }
-
-    return this.uniqueById(allResults);
-  }
 
   private uniqueById(items: ContentItem[]): ContentItem[] {
     const seen = new Set<string>();

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyIdToken } from '../services/firebase.service';
+import { verifyIdToken, isFirebaseInitialized, getFirebaseInitializationError } from '../services/firebase.service';
 
 export interface AuthRequest extends Request {
     user?: {
@@ -17,6 +17,16 @@ export async function authMiddleware(
     res: Response,
     next: NextFunction
 ): Promise<void> {
+    const { isFirebaseInitialized } = await import('../services/firebase.service');
+
+    if (!isFirebaseInitialized()) {
+        res.status(503).json({ 
+            error: 'Authentication service unavailable', 
+            message: 'Firebase Admin SDK is not configured on the server. Please check FIREBASE_SERVICE_ACCOUNT_PATH in .env.' 
+        });
+        return;
+    }
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

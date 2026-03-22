@@ -49,6 +49,60 @@ router.get('/trending', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/content/catalog
+ * Get paginated catalog of movies or TV shows (used by Browse/View All)
+ * Query params: type (movie|tv), page
+ */
+router.get('/catalog', async (req: Request, res: Response) => {
+    try {
+        const type = (req.query.type as 'movie' | 'tv') || 'movie';
+        const page = parseInt(String(req.query.page)) || 1;
+
+        const results = await tmdbService.discover(type, {
+            page,
+            sortBy: 'popularity.desc'
+        });
+
+        res.json({
+            results,
+            page,
+            totalPages: 10, // TMDB returns up to 500 pages but we cap at 10
+            totalResults: results.length
+        });
+    } catch (error) {
+        console.error('Catalog error:', error);
+        res.status(500).json({ error: 'Failed to get catalog' });
+    }
+});
+
+/**
+ * GET /api/content/anime
+ * Get anime content (animation genre)
+ * Query params: page
+ */
+router.get('/anime', async (req: Request, res: Response) => {
+    try {
+        const page = parseInt(String(req.query.page)) || 1;
+
+        const results = await tmdbService.discover('tv', {
+            genres: [16], // Animation genre ID
+            page,
+            sortBy: 'popularity.desc'
+        });
+
+        res.json({
+            results,
+            page,
+            totalPages: 5,
+            totalResults: results.length
+        });
+    } catch (error) {
+        console.error('Anime error:', error);
+        res.status(500).json({ error: 'Failed to get anime' });
+    }
+});
+
+/**
  * GET /api/content/trending/filtered
  * Get trending content filtered by user's services (requires auth)
  */
