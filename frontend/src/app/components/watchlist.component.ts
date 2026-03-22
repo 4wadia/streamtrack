@@ -127,7 +127,7 @@ import { WatchlistService, WatchlistItem } from '../services/watchlist.service';
                     />
 
                     <div
-                      class="absolute inset-0 bg-[#fafafa]/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6"
+                      class="absolute inset-0 bg-[#fcfcfd]/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6"
                     >
                       <div
                         class="translate-y-4 group-hover:translate-y-0 transition-transform duration-500"
@@ -254,7 +254,7 @@ import { WatchlistService, WatchlistItem } from '../services/watchlist.service';
                 class="w-full h-full object-cover opacity-60"
                 referrerpolicy="no-referrer"
               />
-              <div class="absolute inset-0 bg-[#fafafa]/40"></div>
+              <div class="absolute inset-0 bg-[#fcfcfd]/40"></div>
 
               <div class="absolute bottom-0 left-0 w-full p-8 flex items-end gap-6">
                 <img
@@ -293,7 +293,7 @@ import { WatchlistService, WatchlistItem } from '../services/watchlist.service';
                   @if (item.status !== 'watched') {
                     <button
                       (click)="toggleStatus(item.contentId, 'watched')"
-                      class="px-5 py-2.5 bg-black text-white text-[11px] font-medium rounded-md hover:bg-[#e5e5e5] transition-colors border-none cursor-pointer flex items-center gap-2"
+                      class="px-5 py-2.5 bg-black text-white text-[11px] font-medium rounded-md hover:bg-[#e2e2e7] transition-colors border-none cursor-pointer flex items-center gap-2"
                     >
                       <lucide-icon name="check" class="w-3.5 h-3.5"></lucide-icon> Mark Watched
                     </button>

@@ -31,7 +31,7 @@ import { StateService } from '../services/state.service';
             class="relative h-40 rounded-2xl overflow-hidden group cursor-pointer p-0 transition-all duration-500 hover:scale-[1.02]"
             [ngClass]="
               state.activeVibe() === vibe.name
-                ? 'ring-2 ring-white ring-offset-4 ring-offset-[#050505]'
+                ? 'ring-2 ring-white ring-offset-4 ring-offset-[#1d1d1f]'
                 : ''
             "
           >
@@ -40,7 +40,7 @@ import { StateService } from '../services/state.service';
               [alt]="vibe.name"
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
-            <div class="absolute inset-0 bg-[#fafafa]/20"></div>
+            <div class="absolute inset-0 bg-[#fcfcfd]/20"></div>
             <div class="absolute inset-0 flex flex-col justify-end p-5 text-left">
               <lucide-icon
                 [name]="vibe.icon"
