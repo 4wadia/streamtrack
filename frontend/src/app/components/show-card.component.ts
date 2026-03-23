@@ -33,7 +33,7 @@ const PROVIDER_LABELS: Record<string, string> = {
         class="cursor-pointer outline-none"
       >
         <div
-          class="relative aspect-[2/3] overflow-hidden rounded-2xl border border-black/10 bg-black/[0.03] shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
+          class="st-card relative aspect-[2/3] overflow-hidden border border-black/10 bg-white shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
         >
           <img
             [src]="watchlistService.getImageUrl(item.poster_path)"
@@ -42,7 +42,7 @@ const PROVIDER_LABELS: Record<string, string> = {
           />
 
           <span
-            class="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[#1d1d1f] px-2 py-1 text-[10px] font-semibold text-white font-mono"
+            class="absolute left-2 top-2 inline-flex items-center gap-1 rounded-[var(--radius-pill)] bg-black/70 px-2 py-1 text-[10px] font-semibold text-white font-mono"
           >
             <lucide-icon name="star" class="h-3 w-3 fill-white"></lucide-icon>
             {{ rating() }}
@@ -52,10 +52,10 @@ const PROVIDER_LABELS: Record<string, string> = {
             type="button"
             (click)="addToWatchlist($event)"
             [disabled]="isAdding() || isAdded()"
-            class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-sm transition-colors disabled:cursor-not-allowed"
+            class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-[var(--radius-pill)] border border-black/10 bg-white text-black shadow-sm transition-colors disabled:cursor-not-allowed"
             [ngClass]="
               isAdded()
-                ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
+                ? 'bg-black text-white border-black'
                 : 'hover:bg-black hover:text-white'
             "
           >
@@ -84,7 +84,7 @@ const PROVIDER_LABELS: Record<string, string> = {
           <div class="flex flex-wrap gap-1.5">
             @for (provider of providerBadges(); track provider) {
               <span
-                class="rounded-md border border-black/10 bg-black/[0.03] px-2 py-1 text-[10px] font-medium text-black/70"
+                class="rounded-md border border-black/10 bg-black/[0.03] px-2 py-1 text-[10px] font-medium text-black/65"
               >
                 {{ provider }}
               </span>

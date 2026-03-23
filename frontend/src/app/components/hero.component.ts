@@ -1,54 +1,43 @@
 import { Component, signal, HostListener, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
+import { Router } from '@angular/router';
 import { ContentService, ContentItem } from '../services/content.service';
 import { WatchlistService } from '../services/watchlist.service';
 import { OnInit } from '@angular/core';
-import { ContentDetailsModalComponent } from './content-details-modal.component';
 
 @Component({
   selector: 'app-hero',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, ContentDetailsModalComponent],
+  imports: [CommonModule, LucideAngularModule],
   template: `
-    <section class="relative mb-[100px] flex items-center min-h-[500px] overflow-hidden">
-      <!-- Background with backdrop image and white overlay -->
-      <div class="absolute inset-0 z-0">
-        <img
-          [src]="watchlistService.getBackdropUrl(pick()?.backdrop_path)"
-          [alt]="pick()?.title || ''"
-          class="w-full h-full object-cover"
-        />
-        <div class="absolute inset-0 bg-white/60"></div>
-      </div>
-
-      <div
-        class="relative z-10 max-w-[1200px] mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-6"
-      >
+    <section
+      class="relative mb-[84px] min-h-[520px] overflow-hidden border border-black/10 bg-[var(--surface-gradient-tonight)]"
+      style="border-radius: var(--radius-card);"
+    >
+      <div class="relative z-10 mx-auto grid w-full max-w-[1440px] grid-cols-1 items-center gap-10 px-[10%] py-16 md:grid-cols-2">
         <!-- Left Content -->
         <div class="reveal delay-1">
-          <div class="text-black/40 font-mono text-[10px] uppercase tracking-[5px] mb-8">
+          <div class="mb-7 font-mono text-[10px] uppercase tracking-[5px] text-black/45">
             TONIGHT'S PICK
           </div>
 
           <h1
-            class="text-6xl md:text-[5.5rem] font-light leading-[1.05] tracking-[-3px] mb-8 text-black transition-all duration-500"
+            class="mb-7 text-5xl font-extrabold leading-[1.02] tracking-[-1.2px] text-black transition-all duration-500 md:text-[4.8rem]"
             [ngClass]="{ 'opacity-0 translate-y-4': !pick() }"
             [innerHTML]="formatTitle(pick()?.title || pick()?.name || 'Loading...')"
           >
           </h1>
 
           <div
-            class="flex flex-wrap gap-5 font-mono text-[11px] text-black/50 mb-12 items-center tracking-widest transition-all duration-500 delay-100"
+            class="mb-10 flex flex-wrap items-center gap-2.5 font-mono text-[11px] tracking-widest transition-all delay-100 duration-500"
             [ngClass]="{ 'opacity-0 translate-y-4': !pick() }"
           >
-            <span>{{ pick()?.type === 'movie' ? 'Movie' : 'TV Series' }}</span>
-            <span class="w-1 h-1 bg-black/20 rounded-full"></span>
-            <span>{{ (pick()?.release_date || pick()?.first_air_date || '').split('-')[0] }}</span>
-            <span class="w-1 h-1 bg-black/20 rounded-full"></span>
-            <span class="flex items-center gap-1.5">
-              <lucide-icon name="star" class="w-3.5 h-3.5 fill-black"></lucide-icon>
-              {{ (pick()?.vote_average || 0).toFixed(1) }}
+            <span class="st-pill-meta">{{ pick()?.type === 'movie' ? 'Movie' : 'TV Series' }}</span>
+            <span class="st-pill-meta">{{ (pick()?.release_date || pick()?.first_air_date || '').split('-')[0] }}</span>
+            <span class="st-pill-meta flex items-center gap-1.5">
+              <lucide-icon name="star" class="h-3.5 w-3.5 fill-white"></lucide-icon>
+              Rating {{ (pick()?.vote_average || 0).toFixed(1) }}
             </span>
           </div>
 
@@ -56,7 +45,7 @@ import { ContentDetailsModalComponent } from './content-details-modal.component'
             <button
               type="button"
               (click)="openPickDetails()"
-              class="border border-black/20 px-10 py-5 font-mono text-[10px] font-bold cursor-pointer transition-all duration-300 rounded-none flex items-center justify-center gap-3 uppercase tracking-[2px] bg-white text-black hover:bg-black hover:text-white no-underline"
+              class="st-pill border border-black/15 bg-white font-mono text-[10px] font-bold uppercase tracking-[2px] text-black transition-all duration-300 hover:bg-black hover:text-white"
             >
               VIEW DETAILS
             </button>
@@ -64,15 +53,15 @@ import { ContentDetailsModalComponent } from './content-details-modal.component'
             <button
               (click)="addPickToWatchlist()"
               [disabled]="isAddingToWatchlist() || isPickAdded()"
-              class="relative border-none px-10 py-5 font-mono text-[10px] font-bold cursor-pointer transition-all duration-300 rounded-none flex items-center justify-center gap-3 uppercase tracking-[2px] overflow-hidden disabled:cursor-not-allowed"
+              class="st-pill relative overflow-hidden border-none font-mono text-[10px] font-bold uppercase tracking-[2px] transition-all duration-300 disabled:cursor-not-allowed"
               [ngClass]="
                 isPickAdded()
-                  ? 'bg-[#1d1d1f] text-white'
+                  ? 'bg-black text-white'
                   : 'bg-black text-white hover:bg-black/80'
               "
             >
               @if (showTickPulse()) {
-                <span class="absolute inset-0 bg-[#8e8e93]/40 animate-ping"></span>
+                <span class="absolute inset-0 animate-ping bg-black/25"></span>
               }
 
               <span class="relative flex items-center gap-3">
@@ -94,34 +83,29 @@ import { ContentDetailsModalComponent } from './content-details-modal.component'
           (click)="openPickDetails()"
           (keydown.enter)="openPickDetails()"
           tabindex="0"
-          class="relative group justify-self-center md:justify-self-end mr-12 reveal delay-2 cursor-pointer"
+          class="group relative mr-0 cursor-pointer justify-self-center reveal delay-2 md:justify-self-end"
         >
           <div
             #visual
-            class="relative w-[320px] h-[480px] overflow-hidden rounded-2xl shadow-2xl transition-all duration-1000 ease-out border border-black/10"
+            class="st-poster-rounded st-poster-elevated relative h-[480px] w-[320px] overflow-hidden border border-black/10 transition-all duration-1000 ease-out"
           >
             <img
               [src]="watchlistService.getImageUrl(pick()?.poster_path)"
               [alt]="pick()?.title"
-              class="w-full h-full object-cover grayscale-[0.1] transition-transform duration-700 group-hover:scale-105"
+              class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           </div>
         </div>
       </div>
-
-      <app-content-details-modal
-        [item]="isDetailsOpen() ? pick() : null"
-        (closed)="closePickDetails()"
-      ></app-content-details-modal>
     </section>
   `,
 })
 export class HeroComponent implements OnInit {
   private contentService = inject(ContentService);
+  private router = inject(Router);
   watchlistService = inject(WatchlistService);
 
   pick = signal<ContentItem | null>(null);
-  isDetailsOpen = signal(false);
   isAddingToWatchlist = signal(false);
   isPickAdded = signal(false);
   showTickPulse = signal(false);
@@ -219,15 +203,20 @@ export class HeroComponent implements OnInit {
   }
 
   openPickDetails(): void {
-    if (!this.pick()) {
+    const item = this.pick();
+    if (!item) {
       return;
     }
 
-    this.isDetailsOpen.set(true);
-  }
+    const tmdbId = this.resolveTmdbId(item);
+    if (!tmdbId) return;
 
-  closePickDetails(): void {
-    this.isDetailsOpen.set(false);
+    const route = item.type === 'movie' ? '/movie' : '/tv';
+    void this.router.navigate([route, tmdbId], {
+      state: {
+        preview: item,
+      },
+    });
   }
 
   formatTitle(title: string): string {
@@ -237,6 +226,24 @@ export class HeroComponent implements OnInit {
       return words.slice(0, 2).join(' ') + '<br />' + words.slice(2).join(' ');
     }
     return title;
+  }
+
+  private resolveTmdbId(item: ContentItem): number | null {
+    if (typeof item.tmdbId === 'number' && Number.isInteger(item.tmdbId) && item.tmdbId > 0) {
+      return item.tmdbId;
+    }
+
+    if (typeof item.id === 'number' && Number.isInteger(item.id) && item.id > 0) {
+      return item.id;
+    }
+
+    if (typeof item.id === 'string') {
+      const parts = item.id.split('-');
+      const candidate = Number(parts[parts.length - 1]);
+      if (Number.isInteger(candidate) && candidate > 0) return candidate;
+    }
+
+    return null;
   }
 
   @HostListener('mousemove', ['$event'])

@@ -15,7 +15,7 @@ import { ShowCardComponent } from './show-card.component';
         @if (showViewAllButton()) {
           <a
             [routerLink]="viewAllLink"
-            class="text-[11px] font-mono uppercase tracking-widest text-black/60 transition-colors hover:text-black no-underline"
+            class="text-[11px] font-mono uppercase tracking-widest text-black/55 transition-colors hover:text-black no-underline"
           >
             View All
           </a>

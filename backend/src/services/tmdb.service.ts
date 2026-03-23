@@ -88,6 +88,16 @@ export interface PagedContentResult {
     totalResults: number;
 }
 
+interface DiscoverOptions {
+    genres?: number[];
+    providers?: number[];
+    providerId?: number;
+    watchRegion?: string;
+    minRating?: number;
+    page?: number;
+    sortBy?: string;
+}
+
 export interface CastMember {
     id: number;
     name: string;
@@ -409,13 +419,7 @@ class TMDBService {
      */
     async discover(
         type: 'movie' | 'tv',
-        options: {
-            genres?: number[];
-            providers?: number[];
-            minRating?: number;
-            page?: number;
-            sortBy?: string;
-        } = {}
+        options: DiscoverOptions = {}
     ): Promise<ContentItem[]> {
         const response = await this.discoverPaged(type, options);
         return response.results;
@@ -437,26 +441,23 @@ class TMDBService {
 
     async discoverPaged(
         type: 'movie' | 'tv',
-        options: {
-            genres?: number[];
-            providers?: number[];
-            minRating?: number;
-            page?: number;
-            sortBy?: string;
-        } = {}
+        options: DiscoverOptions = {}
     ): Promise<PagedContentResult> {
         const normalizedPage = this.normalizePage(options.page);
+        const watchRegion = options.watchRegion || this.region;
         const params: Record<string, string> = {
             page: String(normalizedPage),
             sort_by: options.sortBy || 'popularity.desc',
             'vote_count.gte': '50', // Minimum votes for quality
-            watch_region: this.region
+            watch_region: watchRegion
         };
 
         if (options.genres?.length) {
             params.with_genres = options.genres.join(',');
         }
-        if (options.providers?.length) {
+        if (typeof options.providerId === 'number') {
+            params.with_watch_providers = String(options.providerId);
+        } else if (options.providers?.length) {
             params.with_watch_providers = options.providers.join('|');
         }
         if (options.minRating) {

@@ -29,6 +29,27 @@ function parseTmdbId(value: unknown): number | null {
     return parsed;
 }
 
+function parseProviderId(value: unknown): number | undefined {
+    if (value === undefined || value === null || value === '') {
+        return undefined;
+    }
+
+    const parsed = Number.parseInt(String(value), 10);
+    if (Number.isNaN(parsed) || parsed <= 0) {
+        return undefined;
+    }
+
+    return parsed;
+}
+
+function parseWatchRegion(value: unknown): string {
+    if (typeof value !== 'string' || value.trim().length === 0) {
+        return 'IN';
+    }
+
+    return value.trim().toUpperCase();
+}
+
 async function sendContentDetails(type: 'movie' | 'tv', idValue: unknown, res: Response): Promise<void> {
     const tmdbId = parseTmdbId(idValue);
     if (!tmdbId) {
@@ -99,8 +120,12 @@ router.get('/search', async (req: Request, res: Response) => {
 router.get('/movies', async (req: Request, res: Response) => {
     try {
         const page = parsePage(req.query.page);
+        const providerId = parseProviderId(req.query.providerId);
+        const watchRegion = parseWatchRegion(req.query.watch_region);
         const response = await tmdbService.discoverPaged('movie', {
             page,
+            providerId,
+            watchRegion,
             sortBy: 'popularity.desc'
         });
 
@@ -119,8 +144,12 @@ router.get('/movies', async (req: Request, res: Response) => {
 router.get('/tv-shows', async (req: Request, res: Response) => {
     try {
         const page = parsePage(req.query.page);
+        const providerId = parseProviderId(req.query.providerId);
+        const watchRegion = parseWatchRegion(req.query.watch_region);
         const response = await tmdbService.discoverPaged('tv', {
             page,
+            providerId,
+            watchRegion,
             sortBy: 'popularity.desc'
         });
 
@@ -210,9 +239,13 @@ router.get('/catalog', async (req: Request, res: Response) => {
     try {
         const type = (req.query.type as 'movie' | 'tv') || 'movie';
         const page = parsePage(req.query.page);
+        const providerId = parseProviderId(req.query.providerId);
+        const watchRegion = parseWatchRegion(req.query.watch_region);
 
         const response = await tmdbService.discoverPaged(type, {
             page,
+            providerId,
+            watchRegion,
             sortBy: 'popularity.desc'
         });
 
@@ -231,10 +264,14 @@ router.get('/catalog', async (req: Request, res: Response) => {
 router.get('/anime', async (req: Request, res: Response) => {
     try {
         const page = parsePage(req.query.page);
+        const providerId = parseProviderId(req.query.providerId);
+        const watchRegion = parseWatchRegion(req.query.watch_region);
 
         const response = await tmdbService.discoverPaged('tv', {
             genres: [16], // Animation genre ID
             page,
+            providerId,
+            watchRegion,
             sortBy: 'popularity.desc'
         });
 
