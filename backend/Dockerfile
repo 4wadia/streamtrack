@@ -4,7 +4,7 @@ WORKDIR /app
 # Copy only backend package.json and install deps (no workspace needed)
 COPY backend/package.json ./package.json
 COPY bun.lock ./bun.lock
-RUN bun install --frozen-lockfile || bun install
+RUN bun install
 
 # Copy backend source code
 COPY backend ./
