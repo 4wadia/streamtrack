@@ -26,6 +26,26 @@ export interface ContentItem {
   writers?: string[];
   cast?: string[];
   crew?: string[];
+  castMembers?: CastMember[];
+  trailer?: TrailerInfo | null;
+  similar?: PagedContentResponse;
+}
+
+export interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+  profile_url: string | null;
+}
+
+export interface TrailerInfo {
+  key: string;
+  name: string;
+  site: string;
+  type: string;
+  url: string;
+  embedUrl: string;
 }
 
 export interface PagedContentResponse {
@@ -73,9 +93,11 @@ export class ContentService {
     page = 1,
     type: 'movie' | 'tv' | 'all' = 'all',
   ): Observable<PagedContentResponse> {
-    const encoded = encodeURIComponent(query);
+    const encoded = encodeURIComponent(query.trim());
     return this.api
-      .get<PagedContentResponse>(`${this.contentPath}/search?q=${encoded}&page=${page}&type=${type}`)
+      .get<PagedContentResponse>(
+        `${this.contentPath}/search?query=${encoded}&page=${page}&type=${type}`,
+      )
       .pipe(
         map((res) => ({
           ...res,
@@ -87,7 +109,39 @@ export class ContentService {
       );
   }
 
+  getMoviesPage(page = 1): Observable<PagedContentResponse> {
+    return this.api.get<PagedContentResponse>(`${this.contentPath}/movies?page=${page}`).pipe(
+      map((res) => ({
+        ...res,
+        results: res.results.map((item) => ({
+          ...item,
+          type: 'movie' as const,
+        })),
+      })),
+    );
+  }
+
+  getTvShowsPage(page = 1): Observable<PagedContentResponse> {
+    return this.api.get<PagedContentResponse>(`${this.contentPath}/tv-shows?page=${page}`).pipe(
+      map((res) => ({
+        ...res,
+        results: res.results.map((item) => ({
+          ...item,
+          type: 'tv' as const,
+        })),
+      })),
+    );
+  }
+
   getCatalogPage(type: 'movie' | 'tv', page = 1): Observable<PagedContentResponse> {
+    if (type === 'movie') {
+      return this.getMoviesPage(page);
+    }
+
+    if (type === 'tv') {
+      return this.getTvShowsPage(page);
+    }
+
     return this.api
       .get<PagedContentResponse>(`${this.contentPath}/catalog?type=${type}&page=${page}`)
       .pipe(
@@ -122,8 +176,43 @@ export class ContentService {
       map((res) => ({
         ...res.content,
         type: res.content.type || type,
+        castMembers: (res.content as any).castMembers || (res.content as any).cast || [],
       })),
     );
+  }
+
+  getMovieDetails(id: number): Observable<ContentItem> {
+    return this.api.get<{ content: ContentItem }>(`${this.contentPath}/movie/${id}`).pipe(
+      map((res) => ({
+        ...res.content,
+        type: 'movie',
+        castMembers: (res.content as any).castMembers || (res.content as any).cast || [],
+      })),
+    );
+  }
+
+  getTvDetails(id: number): Observable<ContentItem> {
+    return this.api.get<{ content: ContentItem }>(`${this.contentPath}/tv/${id}`).pipe(
+      map((res) => ({
+        ...res.content,
+        type: 'tv',
+        castMembers: (res.content as any).castMembers || (res.content as any).cast || [],
+      })),
+    );
+  }
+
+  getSimilar(type: 'movie' | 'tv', id: number, page = 1): Observable<PagedContentResponse> {
+    return this.api
+      .get<PagedContentResponse>(`${this.contentPath}/${type}/${id}/similar?page=${page}`)
+      .pipe(
+        map((res) => ({
+          ...res,
+          results: res.results.map((item) => ({
+            ...item,
+            type: item.type || type,
+          })),
+        })),
+      );
   }
 
   getTonightPick(): Observable<{ pick: ContentItem; reason: string }> {

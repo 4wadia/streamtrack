@@ -526,6 +526,17 @@ export class HeaderComponent implements OnDestroy, AfterViewInit {
 
   onSearchChange(value: string): void {
     this.state.searchQuery.set(value);
+
+    if (this.currentUrl().startsWith('/browse/')) {
+      const query = value.trim();
+      void this.router.navigate([this.currentUrl()], {
+        queryParams: {
+          q: query || null,
+          page: 1,
+        },
+        queryParamsHandling: 'merge',
+      });
+    }
   }
 
   closeAddModal(): void {

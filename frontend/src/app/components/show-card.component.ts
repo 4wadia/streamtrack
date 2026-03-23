@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { Component, Input, inject, signal } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
+import { Router } from '@angular/router';
 import { ContentItem } from '../services/content.service';
 import { WatchlistService } from '../services/watchlist.service';
 
@@ -97,8 +98,8 @@ const PROVIDER_LABELS: Record<string, string> = {
 export class ShowCardComponent {
   @Input({ required: true }) item!: ContentItem;
   @Input() mode: 'rail' | 'grid' = 'rail';
-  @Output() details = new EventEmitter<ContentItem>();
 
+  private router = inject(Router);
   watchlistService = inject(WatchlistService);
   isAdding = signal(false);
   isAdded = signal(false);
@@ -125,7 +126,17 @@ export class ShowCardComponent {
   }
 
   openDetails(): void {
-    this.details.emit(this.item);
+    const tmdbId = this.resolveTmdbId(this.item);
+    if (!tmdbId) {
+      return;
+    }
+
+    const route = this.item.type === 'movie' ? '/movie' : '/tv';
+    void this.router.navigate([route, tmdbId], {
+      state: {
+        preview: this.item,
+      },
+    });
   }
 
   addToWatchlist(event: Event): void {
@@ -168,6 +179,24 @@ export class ShowCardComponent {
   private toContentId(item: ContentItem): string {
     const rawId = String(item.id);
     return rawId.includes('-') ? rawId : `${item.type}-${rawId}`;
+  }
+
+  private resolveTmdbId(item: ContentItem): number | null {
+    if (typeof item.tmdbId === 'number' && Number.isInteger(item.tmdbId) && item.tmdbId > 0) {
+      return item.tmdbId;
+    }
+
+    if (typeof item.id === 'number' && Number.isInteger(item.id) && item.id > 0) {
+      return item.id;
+    }
+
+    if (typeof item.id === 'string') {
+      const parts = item.id.split('-');
+      const candidate = Number(parts[parts.length - 1]);
+      if (Number.isInteger(candidate) && candidate > 0) return candidate;
+    }
+
+    return null;
   }
 
   private isAlreadyAddedError(error: unknown): boolean {

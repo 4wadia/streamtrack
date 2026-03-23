@@ -21,8 +21,8 @@ export async function authMiddleware(
 
     if (!isFirebaseInitialized()) {
         res.status(503).json({ 
-            error: 'Authentication service unavailable', 
-            message: 'Firebase Admin SDK is not configured on the server. Please check FIREBASE_SERVICE_ACCOUNT_PATH in .env.' 
+            error: "Auth unavailable", 
+            code: 503
         });
         return;
     }
