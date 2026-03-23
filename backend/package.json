@@ -4,12 +4,13 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "bun --watch src/index.ts",
+        "dev": "bun run --env-file ../.env scripts/check-env.ts && bun run --env-file ../.env --watch src/index.ts",
         "build": "bun build src/index.ts --outdir dist --target bun",
-        "start": "bun run dist/index.js",
+        "start": "bun run --env-file ../.env dist/index.js",
         "typecheck": "tsc --noEmit",
         "lint": "eslint src --ext .ts",
-        "test": "bun test"
+        "test": "bun test",
+        "check-env": "bun run --env-file ../.env scripts/check-env.ts"
     },
     "dependencies": {
         "cors": "^2.8.6",

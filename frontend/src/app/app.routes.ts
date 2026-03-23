@@ -15,6 +15,8 @@ export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'home', component: HomeComponent, data: { animation: 'home' } },
   { path: 'browse/:category', component: BrowsePageComponent },
+  { path: 'movie/:id', component: ContentDetailsPageComponent, data: { type: 'movie' } },
+  { path: 'tv/:id', component: ContentDetailsPageComponent, data: { type: 'tv' } },
   { path: 'details/:type/:id', component: ContentDetailsPageComponent },
   { path: 'vibes', component: VibesPageComponent },
   { path: 'login', component: LoginComponent },

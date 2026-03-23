@@ -1,23 +1,26 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Subscription, firstValueFrom } from 'rxjs';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subscription, combineLatest, firstValueFrom } from 'rxjs';
 import { ContentGridComponent } from './content-grid.component';
-import { ContentItem, ContentService } from '../services/content.service';
+import {
+  ContentItem,
+  ContentService,
+  PagedContentResponse,
+} from '../services/content.service';
 import { StateService } from '../services/state.service';
 
 type BrowseCategory = 'trending' | 'movies' | 'tv' | 'anime';
 
 interface BrowseConfig {
   title: string;
-  type: 'all' | 'movie' | 'tv' | 'anime';
 }
 
 const BROWSE_CONFIG: Record<BrowseCategory, BrowseConfig> = {
-  trending: { title: 'Trending Now', type: 'all' },
-  movies: { title: 'All Movies', type: 'movie' },
-  tv: { title: 'All TV Shows', type: 'tv' },
-  anime: { title: 'Anime Picks', type: 'anime' },
+  trending: { title: 'Trending Now' },
+  movies: { title: 'All Movies' },
+  tv: { title: 'All TV Shows' },
+  anime: { title: 'Anime Picks' },
 };
 
 @Component({
@@ -31,9 +34,9 @@ const BROWSE_CONFIG: Record<BrowseCategory, BrowseConfig> = {
           <h1 class="text-3xl font-bold tracking-tight text-black">{{ title() }}</h1>
           <p class="text-[11px] font-mono text-black/50 uppercase tracking-widest mt-2">
             @if (hasSearch()) {
-              Search results ({{ filteredItems().length }})
+              {{ totalResults() }} search matches
             } @else {
-              {{ items().length }} titles loaded from TMDB
+              {{ totalResults() }} titles found
             }
           </p>
         </div>
@@ -48,7 +51,7 @@ const BROWSE_CONFIG: Record<BrowseCategory, BrowseConfig> = {
         <div class="py-16 text-center text-black/60 font-mono text-sm uppercase tracking-widest">
           {{ loadingMessage() }}
         </div>
-      } @else if (filteredItems().length === 0) {
+      } @else if (items().length === 0) {
         <div class="py-16 text-center text-black/60 font-mono text-sm uppercase tracking-widest">
           @if (hasSearch()) {
             No results found for your search.
@@ -59,89 +62,125 @@ const BROWSE_CONFIG: Record<BrowseCategory, BrowseConfig> = {
       } @else {
         <app-content-grid
           [title]="title()"
-          [items]="filteredItems()"
+          [items]="items()"
           [maxItems]="null"
           [layout]="'grid'"
         ></app-content-grid>
+
+        @if (hasPagination()) {
+          <div
+            class="mt-10 flex items-center justify-between rounded-xl border border-black/10 bg-black/[0.02] px-4 py-3"
+          >
+            <button
+              type="button"
+              (click)="goToPage(page() - 1)"
+              [disabled]="!canGoPrev()"
+              class="rounded-full border border-black/10 px-4 py-2 text-[11px] font-mono uppercase tracking-widest text-black transition-colors enabled:hover:bg-black enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Previous
+            </button>
+
+            <p class="text-[11px] font-mono uppercase tracking-widest text-black/70 m-0">
+              Page {{ page() }} / {{ totalPages() }}
+            </p>
+
+            <button
+              type="button"
+              (click)="goToPage(page() + 1)"
+              [disabled]="!canGoNext()"
+              class="rounded-full border border-black/10 px-4 py-2 text-[11px] font-mono uppercase tracking-widest text-black transition-colors enabled:hover:bg-black enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        }
       }
     </section>
   `,
 })
 export class BrowsePageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private contentService = inject(ContentService);
   private state = inject(StateService);
   private routeSub?: Subscription;
   private requestId = 0;
+  private pageCache = new Map<string, PagedContentResponse>();
 
   title = signal('Browse');
   items = signal<ContentItem[]>([]);
+  page = signal(1);
+  totalPages = signal(1);
+  totalResults = signal(0);
+  query = signal('');
   isLoading = signal(true);
   loadingMessage = signal('Loading titles...');
 
-  hasSearch = computed(() => this.state.searchQuery().trim().length > 0);
-  filteredItems = computed(() => {
-    const query = this.state.searchQuery().trim().toLowerCase();
-    if (!query) {
-      return this.items();
-    }
-
-    return this.items().filter((item) => {
-      const text = `${item.title || item.name || ''} ${item.overview || ''}`.toLowerCase();
-      return text.includes(query);
-    });
-  });
+  hasSearch = computed(() => this.query().length > 0);
+  canGoPrev = computed(() => this.page() > 1);
+  canGoNext = computed(() => this.page() < this.totalPages());
+  hasPagination = computed(() => this.totalPages() > 1);
 
   ngOnInit(): void {
-    this.routeSub = this.route.paramMap.subscribe((params) => {
-      const category = this.resolveCategory(params.get('category'));
-      const config = BROWSE_CONFIG[category];
-      this.title.set(config.title);
-      void this.loadCategory(category);
-    });
+    this.routeSub = combineLatest([this.route.paramMap, this.route.queryParamMap]).subscribe(
+      ([params, queryParams]) => {
+        const category = this.resolveCategory(params.get('category'));
+        const config = BROWSE_CONFIG[category];
+        const page = this.parsePage(queryParams.get('page'));
+        const query = (queryParams.get('q') || '').trim();
+
+        this.title.set(config.title);
+        this.page.set(page);
+        this.query.set(query);
+        this.state.searchQuery.set(query);
+
+        void this.loadPage(category, page, query);
+      },
+    );
   }
 
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
   }
 
-  private async loadCategory(category: BrowseCategory): Promise<void> {
+  async goToPage(targetPage: number): Promise<void> {
+    const nextPage = Math.max(1, Math.min(this.totalPages(), targetPage));
+    if (nextPage === this.page()) return;
+
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        page: nextPage,
+        q: this.query() || null,
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  private async loadPage(category: BrowseCategory, page: number, query: string): Promise<void> {
     const callId = ++this.requestId;
     this.isLoading.set(true);
-    this.items.set([]);
 
     try {
-      if (category === 'movies' || category === 'tv') {
-        this.loadingMessage.set(`Loading ${category === 'movies' ? 'movies' : 'TV shows'}...`);
-        const type = category === 'movies' ? 'movie' : 'tv' as const;
+      this.loadingMessage.set(this.getLoadingMessage(category, query));
+      const response = await this.fetchPage(category, page, query);
+      if (callId !== this.requestId) return;
 
-        // Load 3 pages in parallel for fast results (~60 items)
-        const [p1, p2, p3] = await Promise.all([
-          firstValueFrom(this.contentService.getCatalogPage(type, 1)),
-          firstValueFrom(this.contentService.getCatalogPage(type, 2)),
-          firstValueFrom(this.contentService.getCatalogPage(type, 3)),
-        ]);
+      this.items.set(response.results);
+      this.totalPages.set(Math.max(1, response.totalPages || 1));
+      this.totalResults.set(response.totalResults || response.results.length);
+      this.page.set(response.page || page);
 
-        if (callId !== this.requestId) return;
-        const allResults = [...p1.results, ...p2.results, ...p3.results];
-        this.items.set(this.uniqueById(allResults));
-      } else if (category === 'anime') {
-        this.loadingMessage.set('Loading anime picks...');
-        const response = await firstValueFrom(this.contentService.getAnimePage(1));
-        if (callId !== this.requestId) return;
-        this.items.set(response.results);
-      } else {
-        this.loadingMessage.set('Loading trending titles...');
-        const response = await firstValueFrom(
-          this.contentService.getTrendingPage('all', 'week', 1),
-        );
-        if (callId !== this.requestId) return;
-        this.items.set(response.results);
+      const nextPage = (response.page || page) + 1;
+      if (nextPage <= this.totalPages()) {
+        void this.preloadPage(category, nextPage, query);
       }
     } catch (error) {
       if (callId !== this.requestId) return;
       console.error('Error loading browse page content:', error);
       this.items.set([]);
+      this.totalPages.set(1);
+      this.totalResults.set(0);
     } finally {
       if (callId === this.requestId) {
         this.isLoading.set(false);
@@ -149,19 +188,79 @@ export class BrowsePageComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async fetchPage(
+    category: BrowseCategory,
+    page: number,
+    query: string,
+  ): Promise<PagedContentResponse> {
+    const cacheKey = this.buildCacheKey(category, page, query);
+    const cached = this.pageCache.get(cacheKey);
+    if (cached) return cached;
 
-  private uniqueById(items: ContentItem[]): ContentItem[] {
-    const seen = new Set<string>();
-    const unique: ContentItem[] = [];
+    const response = await firstValueFrom(this.getPageRequest(category, page, query));
+    const normalized: PagedContentResponse = {
+      results: response.results,
+      page: response.page || page,
+      totalPages: response.totalPages || 1,
+      totalResults: response.totalResults || response.results.length,
+    };
 
-    for (const item of items) {
-      const key = String(item.id);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      unique.push(item);
+    this.pageCache.set(cacheKey, normalized);
+    return normalized;
+  }
+
+  private async preloadPage(category: BrowseCategory, page: number, query: string): Promise<void> {
+    const cacheKey = this.buildCacheKey(category, page, query);
+    if (this.pageCache.has(cacheKey)) return;
+
+    try {
+      await this.fetchPage(category, page, query);
+    } catch {
+      // Ignore preload errors to keep UX stable.
+    }
+  }
+
+  private getPageRequest(category: BrowseCategory, page: number, query: string) {
+    if (query) {
+      const type: 'movie' | 'tv' | 'all' =
+        category === 'movies' ? 'movie' : category === 'tv' ? 'tv' : 'all';
+      return this.contentService.search(query, page, type);
     }
 
-    return unique;
+    if (category === 'movies') {
+      return this.contentService.getMoviesPage(page);
+    }
+
+    if (category === 'tv') {
+      return this.contentService.getTvShowsPage(page);
+    }
+
+    if (category === 'anime') {
+      return this.contentService.getAnimePage(page);
+    }
+
+    return this.contentService.getTrendingPage('all', 'week', page);
+  }
+
+  private getLoadingMessage(category: BrowseCategory, query: string): string {
+    if (query) {
+      return `Searching for "${query}"...`;
+    }
+
+    if (category === 'movies') return 'Loading movies...';
+    if (category === 'tv') return 'Loading TV shows...';
+    if (category === 'anime') return 'Loading anime picks...';
+    return 'Loading trending titles...';
+  }
+
+  private buildCacheKey(category: BrowseCategory, page: number, query: string): string {
+    return `${category}|${query.toLowerCase()}|${page}`;
+  }
+
+  private parsePage(value: string | null): number {
+    const parsed = Number.parseInt(value || '1', 10);
+    if (Number.isNaN(parsed)) return 1;
+    return Math.max(1, parsed);
   }
 
   private resolveCategory(value: string | null): BrowseCategory {

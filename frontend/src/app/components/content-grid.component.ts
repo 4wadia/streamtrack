@@ -1,14 +1,13 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ContentItem } from '../services/content.service';
-import { ContentDetailsModalComponent } from './content-details-modal.component';
 import { ShowCardComponent } from './show-card.component';
 
 @Component({
   selector: 'app-content-grid',
   standalone: true,
-  imports: [CommonModule, RouterLink, ContentDetailsModalComponent, ShowCardComponent],
+  imports: [CommonModule, RouterLink, ShowCardComponent],
   template: `
     <section class="mt-10 lg:mt-16">
       <div class="mb-4 flex items-end justify-between gap-4 lg:mb-6">
@@ -26,29 +25,16 @@ import { ShowCardComponent } from './show-card.component';
       @if (layout === 'rail') {
         <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2 pr-2 lg:gap-6">
           @for (item of visibleItems(); track item.id) {
-            <app-show-card
-              [item]="item"
-              [mode]="'rail'"
-              (details)="openDetails($event)"
-            ></app-show-card>
+            <app-show-card [item]="item" [mode]="'rail'"></app-show-card>
           }
         </div>
       } @else {
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-6">
           @for (item of visibleItems(); track item.id) {
-            <app-show-card
-              [item]="item"
-              [mode]="'grid'"
-              (details)="openDetails($event)"
-            ></app-show-card>
+            <app-show-card [item]="item" [mode]="'grid'"></app-show-card>
           }
         </div>
       }
-
-      <app-content-details-modal
-        [item]="selectedDetailsItem()"
-        (closed)="closeDetails()"
-      ></app-content-details-modal>
     </section>
   `,
 })
@@ -58,8 +44,6 @@ export class ContentGridComponent {
   @Input() viewAllLink: string | null = null;
   @Input() maxItems: number | null = 12;
   @Input() layout: 'rail' | 'grid' = 'rail';
-
-  selectedDetailsItem = signal<ContentItem | null>(null);
 
   showViewAllButton(): boolean {
     return (
@@ -76,13 +60,5 @@ export class ContentGridComponent {
     }
 
     return this.items.slice(0, this.maxItems);
-  }
-
-  openDetails(item: ContentItem): void {
-    this.selectedDetailsItem.set(item);
-  }
-
-  closeDetails(): void {
-    this.selectedDetailsItem.set(null);
   }
 }

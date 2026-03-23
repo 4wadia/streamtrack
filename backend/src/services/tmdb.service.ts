@@ -81,6 +81,37 @@ export interface TMDBSearchResult {
     results: (TMDBMovie | TMDBTVShow)[];
 }
 
+export interface PagedContentResult {
+    results: ContentItem[];
+    page: number;
+    totalPages: number;
+    totalResults: number;
+}
+
+export interface CastMember {
+    id: number;
+    name: string;
+    character: string;
+    profile_path: string | null;
+    profile_url: string | null;
+}
+
+export interface TrailerInfo {
+    key: string;
+    name: string;
+    site: string;
+    type: string;
+    url: string;
+    embedUrl: string;
+}
+
+export interface SimilarRecommendations {
+    results: ContentItem[];
+    page: number;
+    totalPages: number;
+    totalResults: number;
+}
+
 export interface TMDBWatchProvider {
     logo_path: string;
     provider_id: number;
@@ -111,6 +142,29 @@ export interface TMDBContentDetails {
     status: string;
     tagline?: string;
     watchProviders?: TMDBWatchProviders;
+    credits?: {
+        cast: {
+            id: number;
+            name: string;
+            character?: string;
+            profile_path: string | null;
+        }[];
+    };
+    videos?: {
+        results: {
+            key: string;
+            name: string;
+            site: string;
+            type: string;
+            official?: boolean;
+        }[];
+    };
+    similar?: {
+        page: number;
+        total_pages: number;
+        total_results: number;
+        results: (TMDBMovie | TMDBTVShow)[];
+    };
 }
 
 // Normalized content format for frontend
@@ -131,11 +185,15 @@ export interface ContentItem {
     genres?: string[];
     runtime?: number;
     watchProviders?: string[];
+    castMembers?: CastMember[];
+    trailer?: TrailerInfo | null;
+    similar?: SimilarRecommendations;
 }
 
 class TMDBService {
     private apiKey: string;
     private readAccessToken: string;
+    private effectiveToken: string;
     private isV4Token: boolean;
     private baseUrl = 'https://api.themoviedb.org/3';
     private imageBaseUrl = 'https://image.tmdb.org/t/p';
@@ -143,15 +201,47 @@ class TMDBService {
     private region = 'IN'; // Default region for watch providers
 
     constructor() {
-        this.apiKey = process.env.TMDB_API_KEY || '';
-        this.readAccessToken = process.env.TMDB_READ_ACCESS_TOKEN || '';
-        // Prefer read access token (v4) over API key (v3)
-        const effectiveToken = this.readAccessToken || this.apiKey;
-        // JWT tokens (v4) are much longer than v3 hex keys (32 chars)
-        this.isV4Token = effectiveToken.length > 40;
-        if (!effectiveToken) {
+        this.apiKey = this.normalizeToken(process.env.TMDB_API_KEY);
+        this.readAccessToken = this.normalizeToken(process.env.TMDB_READ_ACCESS_TOKEN);
+
+        const hasValidReadAccessToken = this.readAccessToken ? this.isV4TokenFormat(this.readAccessToken) : false;
+
+        if (this.readAccessToken && !hasValidReadAccessToken) {
+            console.warn('⚠️ TMDB_READ_ACCESS_TOKEN format looks invalid; expected JWT format.');
+        }
+
+        if (hasValidReadAccessToken) {
+            this.effectiveToken = this.readAccessToken;
+            this.isV4Token = true;
+        } else {
+            this.effectiveToken = this.apiKey;
+            this.isV4Token = false;
+        }
+
+        if (!this.effectiveToken) {
             console.warn('⚠️ TMDB_API_KEY or TMDB_READ_ACCESS_TOKEN not set - content features will not work');
         }
+    }
+
+    private normalizeToken(value: string | undefined): string {
+        if (!value) return '';
+
+        let token = value.trim();
+        token = token.replace(/^Bearer\s+/i, '');
+        token = token.replace(/^['"](.*)['"]$/, '$1').trim();
+
+        return token;
+    }
+
+    private isV4TokenFormat(token: string): boolean {
+        const parts = token.split('.');
+        if (parts.length !== 3) return false;
+        return parts.every((part) => part.length > 0 && /^[A-Za-z0-9_-]+$/.test(part));
+    }
+
+    private normalizePage(page?: number): number {
+        if (!page || !Number.isFinite(page)) return 1;
+        return Math.max(1, Math.min(500, Math.floor(page)));
     }
 
     private async fetchWithRetry<T>(url: string, options: RequestInit, maxRetries = 3): Promise<T> {
@@ -201,7 +291,11 @@ class TMDBService {
 
     private async fetch<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
         const queryParams = new URLSearchParams(params);
-        const effectiveToken = this.readAccessToken || this.apiKey;
+        const effectiveToken = this.effectiveToken;
+
+        if (!effectiveToken) {
+            throw new Error('TMDB credentials are not configured. Set TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY.');
+        }
 
         // For v3 keys, pass as query param; for v4 tokens, use Authorization header
         if (!this.isV4Token) {
@@ -234,16 +328,40 @@ class TMDBService {
     /**
      * Search for movies and TV shows
      */
-    async search(query: string, page = 1): Promise<ContentItem[]> {
-        const data = await this.fetch<TMDBSearchResult>('/search/multi', {
+    async search(
+        query: string,
+        page = 1,
+        type: 'movie' | 'tv' | 'all' = 'all'
+    ): Promise<ContentItem[]> {
+        const response = await this.searchPaged(query, page, type);
+        return response.results;
+    }
+
+    async searchPaged(
+        query: string,
+        page = 1,
+        type: 'movie' | 'tv' | 'all' = 'all'
+    ): Promise<PagedContentResult> {
+        const normalizedPage = this.normalizePage(page);
+        const endpoint = type === 'all' ? '/search/multi' : `/search/${type}`;
+        const data = await this.fetch<TMDBSearchResult>(endpoint, {
             query,
-            page: String(page),
+            page: String(normalizedPage),
             include_adult: 'false'
         });
 
-        return data.results
-            .filter(item => item.media_type === 'movie' || item.media_type === 'tv')
-            .map(item => this.normalizeResult(item));
+        const results = type === 'all'
+            ? data.results
+                .filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+                .map(item => this.normalizeResult(item))
+            : data.results.map(item => this.normalizeResult(item, type));
+
+        return {
+            results,
+            page: data.page,
+            totalPages: data.total_pages,
+            totalResults: data.total_results
+        };
     }
 
     /**
@@ -252,7 +370,9 @@ class TMDBService {
     async getDetails(id: number, type: 'movie' | 'tv'): Promise<ContentItem | null> {
         try {
             const [details, providers] = await Promise.all([
-                this.fetch<TMDBContentDetails>(`/${type}/${id}`),
+                this.fetch<TMDBContentDetails>(`/${type}/${id}`, {
+                    append_to_response: 'credits,videos,similar'
+                }),
                 this.getWatchProviders(id, type)
             ]);
 
@@ -297,8 +417,37 @@ class TMDBService {
             sortBy?: string;
         } = {}
     ): Promise<ContentItem[]> {
+        const response = await this.discoverPaged(type, options);
+        return response.results;
+    }
+
+    async getSimilar(id: number, type: 'movie' | 'tv', page = 1): Promise<PagedContentResult> {
+        const normalizedPage = this.normalizePage(page);
+        const data = await this.fetch<TMDBSearchResult>(`/${type}/${id}/similar`, {
+            page: String(normalizedPage)
+        });
+
+        return {
+            results: data.results.map(item => this.normalizeResult(item, type)),
+            page: data.page,
+            totalPages: data.total_pages,
+            totalResults: data.total_results
+        };
+    }
+
+    async discoverPaged(
+        type: 'movie' | 'tv',
+        options: {
+            genres?: number[];
+            providers?: number[];
+            minRating?: number;
+            page?: number;
+            sortBy?: string;
+        } = {}
+    ): Promise<PagedContentResult> {
+        const normalizedPage = this.normalizePage(options.page);
         const params: Record<string, string> = {
-            page: String(options.page || 1),
+            page: String(normalizedPage),
             sort_by: options.sortBy || 'popularity.desc',
             'vote_count.gte': '50', // Minimum votes for quality
             watch_region: this.region
@@ -315,7 +464,12 @@ class TMDBService {
         }
 
         const data = await this.fetch<TMDBSearchResult>(`/discover/${type}`, params);
-        return data.results.map(item => this.normalizeResult(item, type));
+        return {
+            results: data.results.map(item => this.normalizeResult(item, type)),
+            page: data.page,
+            totalPages: data.total_pages,
+            totalResults: data.total_results
+        };
     }
 
     /**
@@ -391,6 +545,25 @@ class TMDBService {
         watchProviders: string[]
     ): ContentItem {
         const isMovie = type === 'movie';
+        const castMembers: CastMember[] = (item.credits?.cast || [])
+            .slice(0, 20)
+            .map((member) => ({
+                id: member.id,
+                name: member.name,
+                character: member.character || '',
+                profile_path: member.profile_path,
+                profile_url: member.profile_path ? `${this.imageBaseUrl}/w185${member.profile_path}` : null
+            }));
+
+        const trailer = this.extractTrailer(item.videos?.results || []);
+        const similarData = item.similar
+            ? {
+                results: item.similar.results.map((result) => this.normalizeResult(result, type)),
+                page: item.similar.page,
+                totalPages: item.similar.total_pages,
+                totalResults: item.similar.total_results
+            }
+            : undefined;
 
         return {
             id: `${type}-${item.id}`,
@@ -408,7 +581,38 @@ class TMDBService {
             genre_ids: item.genres.map(g => g.id),
             genres: item.genres.map(g => g.name),
             runtime: isMovie ? item.runtime : item.episode_run_time?.[0],
-            watchProviders
+            watchProviders,
+            castMembers,
+            trailer,
+            similar: similarData
+        };
+    }
+
+    private extractTrailer(videos: {
+        key: string;
+        name: string;
+        site: string;
+        type: string;
+        official?: boolean;
+    }[]): TrailerInfo | null {
+        const youtubeVideos = videos.filter((video) => video.site === 'YouTube');
+        if (youtubeVideos.length === 0) {
+            return null;
+        }
+
+        const preferred =
+            youtubeVideos.find((video) => video.type === 'Trailer' && video.official) ||
+            youtubeVideos.find((video) => video.type === 'Trailer') ||
+            youtubeVideos.find((video) => video.type === 'Teaser') ||
+            youtubeVideos[0];
+
+        return {
+            key: preferred.key,
+            name: preferred.name,
+            site: preferred.site,
+            type: preferred.type,
+            url: `https://www.youtube.com/watch?v=${preferred.key}`,
+            embedUrl: `https://www.youtube.com/embed/${preferred.key}`
         };
     }
 

@@ -6,27 +6,180 @@ import { User } from '../models/User';
 
 const router: RouterType = Router();
 
+function parsePage(value: unknown): number {
+    const parsed = Number.parseInt(String(value), 10);
+    if (Number.isNaN(parsed)) return 1;
+    return Math.max(1, Math.min(500, parsed));
+}
+
+function parseType(value: unknown): 'movie' | 'tv' | 'all' {
+    if (value === 'movie' || value === 'tv') {
+        return value;
+    }
+
+    return 'all';
+}
+
+function parseTmdbId(value: unknown): number | null {
+    const parsed = Number.parseInt(String(value), 10);
+    if (Number.isNaN(parsed) || parsed <= 0) {
+        return null;
+    }
+
+    return parsed;
+}
+
+async function sendContentDetails(type: 'movie' | 'tv', idValue: unknown, res: Response): Promise<void> {
+    const tmdbId = parseTmdbId(idValue);
+    if (!tmdbId) {
+        res.status(400).json({ error: 'Invalid ID' });
+        return;
+    }
+
+    const content = await tmdbService.getDetails(tmdbId, type);
+
+    if (!content) {
+        res.status(404).json({ error: 'Content not found' });
+        return;
+    }
+
+    res.json({ content });
+}
+
+async function sendSimilarContent(type: 'movie' | 'tv', idValue: unknown, pageValue: unknown, res: Response): Promise<void> {
+    const tmdbId = parseTmdbId(idValue);
+    if (!tmdbId) {
+        res.status(400).json({ error: 'Invalid ID' });
+        return;
+    }
+
+    const page = parsePage(pageValue);
+    const similar = await tmdbService.getSimilar(tmdbId, type, page);
+    res.json(similar);
+}
+
 /**
  * GET /api/content/search
  * Search for movies and TV shows
- * Query params: q (required), page (optional)
+ * Query params: query|q (required), page, type (optional)
  */
 router.get('/search', async (req: Request, res: Response) => {
     try {
-        const { q, page } = req.query;
+        const query = typeof req.query.query === 'string' && req.query.query.trim().length > 0
+            ? req.query.query.trim()
+            : typeof req.query.q === 'string'
+                ? req.query.q.trim()
+                : '';
 
-        if (!q || typeof q !== 'string') {
-            res.status(400).json({ error: 'Query parameter "q" is required' });
+        if (!query) {
+            res.status(400).json({ error: 'Query parameter "query" or "q" is required' });
             return;
         }
 
-        const pageNum = parseInt(String(page)) || 1;
-        const results = await tmdbService.search(q, pageNum);
+        const pageNum = parsePage(req.query.page);
+        const type = parseType(req.query.type);
+        const response = await tmdbService.searchPaged(query, pageNum, type);
 
-        res.json({ results, query: q, page: pageNum });
+        res.json({
+            ...response,
+            query,
+            type
+        });
     } catch (error) {
         console.error('Search error:', error);
         res.status(500).json({ error: 'Search failed' });
+    }
+});
+
+/**
+ * GET /api/content/movies
+ * Get paginated movies using TMDB discover endpoint
+ * Query params: page
+ */
+router.get('/movies', async (req: Request, res: Response) => {
+    try {
+        const page = parsePage(req.query.page);
+        const response = await tmdbService.discoverPaged('movie', {
+            page,
+            sortBy: 'popularity.desc'
+        });
+
+        res.json(response);
+    } catch (error) {
+        console.error('Movies error:', error);
+        res.status(500).json({ error: 'Failed to get movies' });
+    }
+});
+
+/**
+ * GET /api/content/tv-shows
+ * Get paginated TV shows using TMDB discover endpoint
+ * Query params: page
+ */
+router.get('/tv-shows', async (req: Request, res: Response) => {
+    try {
+        const page = parsePage(req.query.page);
+        const response = await tmdbService.discoverPaged('tv', {
+            page,
+            sortBy: 'popularity.desc'
+        });
+
+        res.json(response);
+    } catch (error) {
+        console.error('TV shows error:', error);
+        res.status(500).json({ error: 'Failed to get TV shows' });
+    }
+});
+
+/**
+ * GET /api/content/movie/:id
+ * Get full movie details with appended credits/videos/similar
+ */
+router.get('/movie/:id', async (req: Request, res: Response) => {
+    try {
+        await sendContentDetails('movie', req.params.id, res);
+    } catch (error) {
+        console.error('Get movie details error:', error);
+        res.status(500).json({ error: 'Failed to get movie details' });
+    }
+});
+
+/**
+ * GET /api/content/tv/:id
+ * Get full TV details with appended credits/videos/similar
+ */
+router.get('/tv/:id', async (req: Request, res: Response) => {
+    try {
+        await sendContentDetails('tv', req.params.id, res);
+    } catch (error) {
+        console.error('Get TV details error:', error);
+        res.status(500).json({ error: 'Failed to get TV details' });
+    }
+});
+
+/**
+ * GET /api/content/movie/:id/similar
+ * Get paginated similar movies
+ */
+router.get('/movie/:id/similar', async (req: Request, res: Response) => {
+    try {
+        await sendSimilarContent('movie', req.params.id, req.query.page, res);
+    } catch (error) {
+        console.error('Get similar movies error:', error);
+        res.status(500).json({ error: 'Failed to get similar movies' });
+    }
+});
+
+/**
+ * GET /api/content/tv/:id/similar
+ * Get paginated similar TV shows
+ */
+router.get('/tv/:id/similar', async (req: Request, res: Response) => {
+    try {
+        await sendSimilarContent('tv', req.params.id, req.query.page, res);
+    } catch (error) {
+        console.error('Get similar TV shows error:', error);
+        res.status(500).json({ error: 'Failed to get similar TV shows' });
     }
 });
 
@@ -56,19 +209,14 @@ router.get('/trending', async (req: Request, res: Response) => {
 router.get('/catalog', async (req: Request, res: Response) => {
     try {
         const type = (req.query.type as 'movie' | 'tv') || 'movie';
-        const page = parseInt(String(req.query.page)) || 1;
+        const page = parsePage(req.query.page);
 
-        const results = await tmdbService.discover(type, {
+        const response = await tmdbService.discoverPaged(type, {
             page,
             sortBy: 'popularity.desc'
         });
 
-        res.json({
-            results,
-            page,
-            totalPages: 10, // TMDB returns up to 500 pages but we cap at 10
-            totalResults: results.length
-        });
+        res.json(response);
     } catch (error) {
         console.error('Catalog error:', error);
         res.status(500).json({ error: 'Failed to get catalog' });
@@ -82,20 +230,15 @@ router.get('/catalog', async (req: Request, res: Response) => {
  */
 router.get('/anime', async (req: Request, res: Response) => {
     try {
-        const page = parseInt(String(req.query.page)) || 1;
+        const page = parsePage(req.query.page);
 
-        const results = await tmdbService.discover('tv', {
+        const response = await tmdbService.discoverPaged('tv', {
             genres: [16], // Animation genre ID
             page,
             sortBy: 'popularity.desc'
         });
 
-        res.json({
-            results,
-            page,
-            totalPages: 5,
-            totalResults: results.length
-        });
+        res.json(response);
     } catch (error) {
         console.error('Anime error:', error);
         res.status(500).json({ error: 'Failed to get anime' });
@@ -149,30 +292,35 @@ router.get('/trending/filtered', authMiddleware, async (req: AuthRequest, res: R
 router.get('/:type/:id', async (req: Request, res: Response) => {
     try {
         const type = req.params.type as string;
-        const id = req.params.id as string;
 
         if (type !== 'movie' && type !== 'tv') {
             res.status(400).json({ error: 'Type must be "movie" or "tv"' });
             return;
         }
 
-        const tmdbId = parseInt(id, 10);
-        if (isNaN(tmdbId)) {
-            res.status(400).json({ error: 'Invalid ID' });
-            return;
-        }
-
-        const content = await tmdbService.getDetails(tmdbId, type);
-
-        if (!content) {
-            res.status(404).json({ error: 'Content not found' });
-            return;
-        }
-
-        res.json({ content });
+        await sendContentDetails(type, req.params.id, res);
     } catch (error) {
         console.error('Get content error:', error);
         res.status(500).json({ error: 'Failed to get content details' });
+    }
+});
+
+/**
+ * GET /api/content/:type/:id/similar
+ * Get paginated similar content
+ */
+router.get('/:type/:id/similar', async (req: Request, res: Response) => {
+    try {
+        const type = req.params.type as string;
+        if (type !== 'movie' && type !== 'tv') {
+            res.status(400).json({ error: 'Type must be "movie" or "tv"' });
+            return;
+        }
+
+        await sendSimilarContent(type, req.params.id, req.query.page, res);
+    } catch (error) {
+        console.error('Get similar content error:', error);
+        res.status(500).json({ error: 'Failed to get similar content' });
     }
 });
 

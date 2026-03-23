@@ -167,25 +167,36 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 /**
  * GET /api/discover/tonight
- * Get tonight's pick recommendation (requires auth)
+ * Get tonight's pick recommendation (works without auth for public access)
  */
-router.get('/tonight', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.get('/tonight', async (req: AuthRequest, res: Response) => {
     try {
-        const { uid } = req.user!;
-        const user = await User.findOne({ firebaseUid: uid });
-
-        if (!user) {
-            res.status(404).json({ error: 'User not found' });
-            return;
+        // Try to get user if authenticated, but don't require it
+        let userServices: string[] = [];
+        let watchlistTmdbIds: number[] = [];
+        
+        const authHeader = req.headers.authorization;
+        if (authHeader?.startsWith('Bearer ')) {
+            try {
+                const { verifyIdToken } = await import('../services/firebase.service');
+                const token = authHeader.split(' ')[1];
+                const decoded = await verifyIdToken(token);
+                if (decoded) {
+                    const user = await User.findOne({ firebaseUid: decoded.uid });
+                    if (user) {
+                        userServices = user.services || [];
+                        watchlistTmdbIds = user.watchlist
+                            .map(item => parseInt(item.contentId))
+                            .filter(id => !isNaN(id));
+                    }
+                }
+            } catch {
+                // Silent fail - proceed without user context
+            }
         }
 
-        // Get watchlist TMDB IDs to exclude already saved content
-        const watchlistTmdbIds = user.watchlist
-            .map(item => parseInt(item.contentId))
-            .filter(id => !isNaN(id));
-
         const { pick, reason } = await vibeService.getTonightsPick(
-            user.services,
+            userServices,
             watchlistTmdbIds
         );
 
