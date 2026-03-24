@@ -4,6 +4,8 @@ import {
   getAuth, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut, 
   onAuthStateChanged,
   User as FirebaseUser
@@ -100,6 +102,21 @@ export class AuthService {
     const { user } = await signInWithEmailAndPassword(auth, payload.email, payload.password);
     
     const response = await firstValueFrom(this.api.post<{ user: AuthUser, message: string }>('/auth/login', {}));
+    this.currentUserSignal.set(response.user);
+    return response.user;
+  }
+
+  async loginWithGoogle(): Promise<AuthUser> {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    const { user } = await signInWithPopup(auth, provider);
+
+    // Backend /auth/login auto-creates user if not found
+    const response = await firstValueFrom(
+      this.api.post<{ user: AuthUser; message: string }>('/auth/login', {
+        name: user.displayName || '',
+      })
+    );
     this.currentUserSignal.set(response.user);
     return response.user;
   }

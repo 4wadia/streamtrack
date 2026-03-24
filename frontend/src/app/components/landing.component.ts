@@ -7,7 +7,7 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="min-h-screen bg-[#fcfcfd] flex flex-col items-center justify-center pt-16 px-6 font-['Inter',sans-serif] selection:bg-[#e2e2e7] selection:text-[#1d1d1f] antialiased">
+    <div class="h-screen overflow-hidden bg-[#fcfcfd] flex flex-col items-center justify-center px-6 font-['Inter',sans-serif] selection:bg-[#e2e2e7] selection:text-[#1d1d1f] antialiased">
       <div class="max-w-4xl w-full text-center reveal">
         <!-- Badge -->
         <span class="inline-block border border-[#e2e2e7] text-[#8e8e93] text-[10px] font-mono tracking-[0.2em] px-3 py-1.5 rounded-full mb-8 uppercase bg-[#ffffff]">
