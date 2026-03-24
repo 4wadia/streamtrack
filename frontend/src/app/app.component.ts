@@ -78,13 +78,13 @@ const SLIDE_TIMING = '450ms cubic-bezier(0.22, 1, 0.36, 1)';
   ],
   template: `
     <div
-      class="min-h-screen bg-[#fafafa] text-black font-['Inter',sans-serif] selection:bg-black/10 selection:text-black pb-20 antialiased"
+      class="min-h-screen bg-[var(--surface-app)] text-[var(--text-on-dark)] font-['Inter',sans-serif] selection:bg-black/10 selection:text-black pb-20 antialiased"
     >
       @if (!isLandingPage()) {
         <app-header></app-header>
       }
 
-      <main [class]="isLandingPage() ? 'relative z-10 mx-auto w-full max-w-[1440px]' : 'relative z-10 mx-auto w-full max-w-[1440px] px-6 pt-6 lg:px-16 lg:pt-8'">
+      <main [class]="isLandingPage() ? 'relative z-10 mx-auto w-full max-w-[1440px]' : 'relative z-10 mx-auto w-full max-w-[1440px] px-[6%] pt-28 md:px-[8%] lg:px-[10%] lg:pt-32'">
         <div
           class="route-slide-shell relative min-h-[60vh] overflow-x-hidden"
           [class.disable-reveal]="isSlideOnlyRoute(outlet)"

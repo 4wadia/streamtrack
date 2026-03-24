@@ -21,264 +21,171 @@ import { AuthService } from '../services/auth.service';
 import { StateService } from '../services/state.service';
 import { WatchlistService } from '../services/watchlist.service';
 
+const PROVIDER_TO_TMDB_ID: Record<string, number | null> = {
+  All: null,
+  Netflix: 8,
+  'Prime Video': 119,
+  JioHotstar: 122,
+  Zee5: 232,
+  ZEE5: 232,
+  SonyLIV: 237,
+};
+
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, LucideAngularModule],
   template: `
-    <header class="sticky top-0 z-50 border-b border-black/10 bg-white/95 backdrop-blur">
-      <div
-        class="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-4 lg:px-16"
-      >
-        <div class="flex items-center gap-4 lg:gap-8">
-          <a
-            routerLink="/home"
-            class="flex items-center gap-2 text-lg font-bold tracking-tight text-black no-underline"
-          >
-            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-black">
-              <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
-            </span>
-            StreamTrack
-          </a>
+    <header class="fixed inset-x-0 top-0 z-50 flex h-[72px] w-full items-center justify-between border-b border-[#e7e7e7] bg-white px-[4%] font-sans">
+      <!-- Group 1: Logo -->
+      <a routerLink="/home" class="flex items-center gap-2 text-lg font-bold tracking-tight text-[#1a1a1a] no-underline">
+        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#1a1a1a]">
+          <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+        </span>
+        StreamTrack
+      </a>
 
-          @if (!isAuthPage()) {
-            <nav
-              class="relative hidden min-w-[220px] grid-cols-2 rounded-full border border-black/10 bg-black/[0.03] p-1 md:grid"
-            >
-            <span
-              class="absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-black transition-transform duration-300 ease-out"
-              [ngClass]="activeNavPath() === '/watchlist' ? 'translate-x-full' : 'translate-x-0'"
-            ></span>
-
-            <a
-              routerLink="/home"
-              (click)="setActiveNav('/home')"
-              class="relative z-10 rounded-full px-4 py-2 text-center text-[12px] leading-none transition-colors no-underline"
-              [ngClass]="
-                activeNavPath() === '/home'
-                  ? 'font-semibold text-white'
-                  : 'font-medium text-black/70 hover:text-black'
-              "
-            >
+      @if (!isAuthPage()) {
+        <div class="hidden flex-1 items-center justify-center gap-4 lg:flex">
+          <!-- Group 2: Nav -->
+          <nav class="relative flex h-[44px] items-center rounded-[50px] border border-[#e0e0e0] bg-[#f5f5f5] p-[4px]">
+            <div class="absolute inset-y-[4px] z-0 rounded-[50px] bg-black transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                 [style.left.px]="navIndicatorLeft()"
+                 [style.width.px]="navIndicatorWidth()"></div>
+            <a #navButton routerLink="/home" (click)="setActiveNav('/home')"
+               class="relative z-10 flex h-[36px] items-center justify-center rounded-[50px] px-4 text-[14px] font-[500] tracking-tight no-underline transition-colors"
+               [ngClass]="activeNavPath() === '/home' ? 'text-white' : 'text-[#6f6f6f] hover:text-[#1a1a1a]'">
               Home
             </a>
-
-            <a
-              routerLink="/watchlist"
-              (click)="setActiveNav('/watchlist')"
-              class="relative z-10 rounded-full px-4 py-2 text-center text-[12px] leading-none transition-colors no-underline"
-              [ngClass]="
-                activeNavPath() === '/watchlist'
-                  ? 'font-semibold text-white'
-                  : 'font-medium text-black/70 hover:text-black'
-              "
-            >
+            <a #navButton routerLink="/watchlist" (click)="setActiveNav('/watchlist')"
+               class="relative z-10 flex h-[36px] items-center justify-center rounded-[50px] px-4 text-[14px] font-[500] tracking-tight no-underline transition-colors"
+               [ngClass]="activeNavPath() === '/watchlist' ? 'text-white' : 'text-[#6f6f6f] hover:text-[#1a1a1a]'">
               Watchlist
             </a>
           </nav>
-          }
-        </div>
 
-        <div class="flex items-center gap-2 lg:gap-3">
-          @if (!isAuthPage()) {
-            <div
-              #searchShell
-            class="relative h-9 overflow-hidden rounded-full border border-black/10 bg-black/[0.03] transition-[width,padding] duration-300 ease-out"
-            [ngClass]="isSearchExpanded() ? 'w-56 pl-3 pr-2 lg:w-64' : 'w-9 px-0'"
-          >
-            <button
-              type="button"
-              (click)="toggleSearch($event)"
-              class="absolute left-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border-none bg-transparent text-black/70 transition-colors hover:text-black"
-            >
-              <lucide-icon name="search" class="h-4 w-4"></lucide-icon>
-            </button>
+          <!-- Group 3: Search -->
+          <label class="flex h-[44px] items-center overflow-hidden rounded-[50px] border border-[#e0e0e0] bg-[#f5f5f5] transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)] focus-within:border-black/20"
+                 [ngClass]="isSearchExpanded() ? 'w-[250px] px-4 gap-2.5' : 'w-[44px] px-0 justify-center cursor-pointer'"
+                 (click)="!isSearchExpanded() && toggleSearch($event)">
+            <lucide-icon name="search" class="h-4 w-4 text-[#1a1a1a] opacity-60 flex-shrink-0"></lucide-icon>
+            <input type="text" #searchInput [ngModel]="state.searchQuery()" (ngModelChange)="onSearchChange($event)"
+                   (blur)="closeSearch()"
+                   placeholder="Search titles"
+                   class="h-full border-none bg-transparent text-[14px] font-[400] text-[#1a1a1a] outline-none placeholder:text-[#6f6f6f] transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                   [ngClass]="isSearchExpanded() ? 'w-full opacity-100' : 'w-0 opacity-0 pointer-events-none'" />
+          </label>
 
-            <input
-              #searchInput
-              type="text"
-              [ngModel]="state.searchQuery()"
-              (ngModelChange)="onSearchChange($event)"
-              placeholder="Search titles"
-              class="h-full w-full border-none bg-transparent pl-8 pr-2 text-[12px] text-black outline-none transition-opacity duration-200"
-              [ngClass]="
-                isSearchExpanded()
-                  ? 'opacity-100 pointer-events-auto'
-                  : 'opacity-0 pointer-events-none'
-              "
-            />
-          </div>
-
-          <div
-            class="hidden items-center gap-1 rounded-full border border-black/10 bg-black/[0.03] p-1 xl:flex relative"
-          >
-            <!-- Sliding Background -->
-            <div
-              class="absolute top-1 bottom-1 rounded-full bg-black transition-all duration-300 ease-out z-0"
-              [style.left.px]="pillIndicatorLeft()"
-              [style.width.px]="pillIndicatorWidth()"
-            ></div>
-
+          <!-- Group 4: Providers -->
+          <div class="relative flex h-[44px] items-center rounded-[50px] border border-[#e0e0e0] bg-[#f5f5f5] p-[4px] gap-1">
+            <div class="absolute inset-y-[4px] z-0 rounded-[50px] bg-black transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                 [style.left.px]="pillIndicatorLeft()"
+                 [style.width.px]="pillIndicatorWidth()"></div>
             @for (pill of pills; track pill) {
-              <button
-                #pillButton
-                type="button"
-                (click)="setActivePill(pill)"
-                class="relative z-10 rounded-full px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors"
-                [ngClass]="
-                  state.activePill() === pill
-                    ? 'text-white'
-                    : 'text-black/65 hover:text-black'
-                "
-              >
+              <button #pillButton type="button" (click)="setActivePill(pill)"
+                      class="relative z-10 flex h-[36px] items-center justify-center rounded-[50px] px-4 text-[12px] font-[600] uppercase tracking-[0.05em] transition-colors"
+                      [ngClass]="state.activePill() === pill ? 'text-white' : 'text-[#6f6f6f] hover:text-[#1a1a1a]'">
+                {{ pill }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Group 5: Action/Auth -->
+      <div class="flex items-center gap-2.5">
+
+        @if (auth.isAuthenticated() && !isAuthPage()) {
+          <a routerLink="/profile"
+             class="hidden h-[44px] items-center justify-center rounded-[50px] border border-[#e0e0e0] bg-white px-6 text-[12px] font-[600] uppercase tracking-[0.05em] text-[#1a1a1a] no-underline transition-colors hover:bg-[#f5f5f5] md:flex">
+            PROFILE
+          </a>
+          <button type="button" (click)="logout()"
+                  class="hidden h-[44px] items-center justify-center rounded-[50px] border border-black bg-black px-6 text-[12px] font-[600] uppercase tracking-[0.05em] text-white transition-opacity hover:opacity-90 md:flex">
+            LOGOUT
+          </button>
+        } @else if (!auth.isAuthenticated()) {
+          @if (!isLoginPage()) {
+            <a routerLink="/login"
+               class="hidden h-[44px] items-center justify-center rounded-[50px] border border-[#e0e0e0] bg-white px-6 text-[12px] font-[600] uppercase tracking-[0.05em] text-[#1a1a1a] no-underline transition-colors hover:bg-[#f5f5f5] md:flex">
+              LOGIN
+            </a>
+          }
+          @if (!isSignupPage()) {
+            <a routerLink="/signup"
+               class="hidden h-[44px] items-center justify-center rounded-[50px] border border-black bg-black px-6 text-[12px] font-[600] uppercase tracking-[0.05em] text-white no-underline transition-opacity hover:opacity-90 md:flex">
+              SIGN UP
+            </a>
+          }
+        }
+
+        @if (!isAuthPage()) {
+          <button type="button" (click)="toggleMobileMenu()"
+                  class="flex h-[44px] w-[44px] items-center justify-center rounded-[50px] border border-[#e0e0e0] bg-[#f5f5f5] text-[#1a1a1a] lg:hidden">
+            <lucide-icon [name]="mobileMenuOpen() ? 'x' : 'align-justify'" class="h-5 w-5"></lucide-icon>
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    @if (mobileMenuOpen() && !isAuthPage()) {
+      <div class="border-t border-[#e7e7e7] bg-[#f8f8f8] lg:hidden">
+        <div class="space-y-4 px-[4%] py-4">
+          <nav class="flex flex-col gap-3">
+            <a routerLink="/home" (click)="closeMobileMenu()"
+               class="inline-flex h-[44px] items-center rounded-[50px] border border-[#dddddd] bg-white px-6 text-[14px] font-[500] text-[#1a1a1a] no-underline">
+               Home
+            </a>
+            <a routerLink="/watchlist" (click)="closeMobileMenu()"
+               class="inline-flex h-[44px] items-center rounded-[50px] border border-[#dddddd] bg-white px-6 text-[14px] font-[500] text-[#1a1a1a] no-underline">
+               Watchlist
+            </a>
+          </nav>
+
+          <label class="inline-flex h-[44px] w-full items-center gap-2.5 rounded-[50px] border border-[#dddddd] bg-white px-4">
+            <lucide-icon name="search" class="h-4 w-4 text-[#1a1a1a] opacity-60"></lucide-icon>
+            <input type="text" [ngModel]="state.searchQuery()" (ngModelChange)="onSearchChange($event)"
+                   placeholder="Search titles"
+                   class="h-full w-full border-none bg-transparent text-[14px] font-[400] text-[#1a1a1a] outline-none placeholder:text-[#6f6f6f]" />
+          </label>
+
+          <div class="no-scrollbar flex gap-3 overflow-x-auto pb-1">
+            @for (pill of pills; track pill) {
+              <button type="button" (click)="setActivePill(pill)"
+                      class="h-[44px] whitespace-nowrap rounded-[50px] border border-[#dddddd] bg-white px-6 text-[12px] font-[600] uppercase tracking-[0.05em] text-[#1a1a1a]"
+                      [ngClass]="state.activePill() === pill ? 'border-black bg-black text-white' : ''">
                 {{ pill }}
               </button>
             }
           </div>
 
-          <button
-            type="button"
-            (click)="isAddModalOpen.set(true)"
-            class="hidden h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/[0.03] text-black transition-colors hover:bg-black hover:text-white md:flex"
-          >
-            <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
-          </button>
-          }
-
-          @if (auth.isAuthenticated() && !isAuthPage()) {
-            <a
-              routerLink="/profile"
-              class="hidden h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/[0.03] text-black transition-colors hover:bg-black hover:text-white no-underline md:flex"
-            >
-              <lucide-icon name="user" class="h-4 w-4"></lucide-icon>
-            </a>
-            <button
-              type="button"
-              (click)="logout()"
-              class="hidden rounded-full border border-black/10 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-black/70 transition-colors hover:bg-black hover:text-white md:block"
-            >
-              Logout
-            </button>
-          } @else if (!auth.isAuthenticated()) {
-            @if (!isLoginPage()) {
-              <a
-                routerLink="/login"
-                class="hidden rounded-full border border-black/10 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-black/70 transition-colors hover:bg-black hover:text-white no-underline md:block"
-              >
-                Login
+          @if (auth.isAuthenticated()) {
+            <div class="flex items-center gap-3">
+              <a routerLink="/profile" (click)="closeMobileMenu()"
+                 class="inline-flex h-[44px] items-center rounded-[50px] border border-[#dddddd] bg-white px-6 text-[12px] font-[600] uppercase tracking-[0.05em] text-[#1a1a1a] no-underline">
+                PROFILE
               </a>
-            }
-            @if (!isSignupPage()) {
-              <a
-                routerLink="/signup"
-                class="hidden rounded-full border border-black bg-black px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-white transition-opacity hover:opacity-90 no-underline md:block"
-              >
-                Sign Up
+              <button type="button" (click)="logout()"
+                      class="inline-flex h-[44px] items-center rounded-[50px] border border-black bg-black px-6 text-[12px] font-[600] uppercase tracking-[0.05em] text-white">
+                LOGOUT
+              </button>
+            </div>
+          } @else {
+            <div class="flex items-center gap-3">
+              <a routerLink="/login" (click)="closeMobileMenu()"
+                 class="inline-flex h-[44px] items-center rounded-[50px] border border-[#dddddd] bg-white px-6 text-[12px] font-[600] uppercase tracking-[0.05em] text-[#1a1a1a] no-underline">
+                LOGIN
               </a>
-            }
-          }
-
-          @if (!isAuthPage()) {
-            <button
-              type="button"
-              (click)="toggleMobileMenu()"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/[0.03] text-black md:hidden"
-          >
-            <lucide-icon [name]="mobileMenuOpen() ? 'x' : 'list'" class="h-4 w-4"></lucide-icon>
-          </button>
+              <a routerLink="/signup" (click)="closeMobileMenu()"
+                 class="inline-flex h-[44px] items-center rounded-[50px] border border-black bg-black px-6 text-[12px] font-[600] uppercase tracking-[0.05em] text-white no-underline">
+                SIGN UP
+              </a>
+            </div>
           }
         </div>
       </div>
-
-      @if (mobileMenuOpen() && !isAuthPage()) {
-        <div class="border-t border-black/10 bg-white md:hidden">
-          <div class="space-y-4 px-6 py-4">
-            <nav class="flex flex-col gap-1">
-              <a
-                routerLink="/home"
-                (click)="closeMobileMenu()"
-                class="rounded-xl px-3 py-2 text-sm text-black/75 no-underline"
-              >
-                Home
-              </a>
-              <a
-                routerLink="/watchlist"
-                (click)="closeMobileMenu()"
-                class="rounded-xl px-3 py-2 text-sm text-black/75 no-underline"
-              >
-                Watchlist
-              </a>
-            </nav>
-
-            <label
-              class="flex items-center gap-2 rounded-xl border border-black/10 bg-black/[0.03] px-3 py-2"
-            >
-              <lucide-icon name="search" class="h-4 w-4 text-black/50"></lucide-icon>
-              <input
-                type="text"
-                [ngModel]="state.searchQuery()"
-                (ngModelChange)="onSearchChange($event)"
-                placeholder="Search titles"
-                class="w-full border-none bg-transparent text-sm text-black outline-none"
-              />
-            </label>
-
-            <div class="no-scrollbar flex gap-2 overflow-x-auto pb-1">
-              @for (pill of pills; track pill) {
-                <button
-                  type="button"
-                  (click)="setActivePill(pill)"
-                  class="whitespace-nowrap rounded-full border border-black/10 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider"
-                  [ngClass]="
-                    state.activePill() === pill
-                      ? 'border-black bg-black text-white'
-                      : 'text-black/70'
-                  "
-                >
-                  {{ pill }}
-                </button>
-              }
-            </div>
-
-            @if (auth.isAuthenticated()) {
-              <div class="flex items-center gap-2">
-                <a
-                  routerLink="/profile"
-                  (click)="closeMobileMenu()"
-                  class="rounded-full border border-black/10 px-4 py-2 text-[11px] font-mono uppercase tracking-widest text-black/75 no-underline"
-                >
-                  Profile
-                </a>
-                <button
-                  type="button"
-                  (click)="logout()"
-                  class="rounded-full border border-black bg-black px-4 py-2 text-[11px] font-mono uppercase tracking-widest text-white"
-                >
-                  Logout
-                </button>
-              </div>
-            } @else {
-              <div class="flex items-center gap-2">
-                <a
-                  routerLink="/login"
-                  (click)="closeMobileMenu()"
-                  class="rounded-full border border-black/10 px-4 py-2 text-[11px] font-mono uppercase tracking-widest text-black/75 no-underline"
-                >
-                  Login
-                </a>
-                <a
-                  routerLink="/signup"
-                  (click)="closeMobileMenu()"
-                  class="rounded-full border border-black bg-black px-4 py-2 text-[11px] font-mono uppercase tracking-widest text-white no-underline"
-                >
-                  Sign Up
-                </a>
-              </div>
-            }
-          </div>
-        </div>
-      }
-    </header>
+    }
 
     @if (isAddModalOpen()) {
       <div
@@ -402,6 +309,7 @@ export class HeaderComponent implements OnDestroy, AfterViewInit {
   @ViewChild('searchShell') searchShell?: ElementRef<HTMLElement>;
   @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
   @ViewChildren('pillButton') pillButtons!: QueryList<ElementRef>;
+  @ViewChildren('navButton') navButtons!: QueryList<ElementRef>;
 
   currentUrl = signal<string>('/');
   isAuthPage = computed(() => this.currentUrl() === '/login' || this.currentUrl() === '/signup');
@@ -415,6 +323,8 @@ export class HeaderComponent implements OnDestroy, AfterViewInit {
   isSubmittingAdd = signal(false);
   pills = ['All', 'Netflix', 'Prime Video', 'JioHotstar', 'ZEE5', 'SonyLIV'];
 
+  navIndicatorLeft = signal(0);
+  navIndicatorWidth = signal(0);
   pillIndicatorLeft = signal(0);
   pillIndicatorWidth = signal(0);
 
@@ -438,6 +348,7 @@ export class HeaderComponent implements OnDestroy, AfterViewInit {
 
     effect(() => {
       const active = this.state.activePill();
+      const navPath = this.activeNavPath();
       setTimeout(() => this.updatePillIndicator());
     });
   }
@@ -447,14 +358,29 @@ export class HeaderComponent implements OnDestroy, AfterViewInit {
   }
 
   updatePillIndicator(): void {
-    if (!this.pillButtons) return;
-    const index = this.pills.indexOf(this.state.activePill());
-    if (index === -1) return;
-    const button = this.pillButtons.toArray()[index];
-    if (button) {
-      const el = button.nativeElement;
-      this.pillIndicatorLeft.set(el.offsetLeft);
-      this.pillIndicatorWidth.set(el.offsetWidth);
+    if (this.pillButtons) {
+      const index = this.pills.indexOf(this.state.activePill());
+      if (index !== -1) {
+        const button = this.pillButtons.toArray()[index];
+        if (button) {
+          const el = button.nativeElement;
+          this.pillIndicatorLeft.set(el.offsetLeft);
+          this.pillIndicatorWidth.set(el.offsetWidth);
+        }
+      }
+    }
+    
+    if (this.navButtons) {
+      const paths = ['/home', '/watchlist'];
+      const index = paths.indexOf(this.activeNavPath());
+      if (index !== -1) {
+        const button = this.navButtons.toArray()[index];
+        if (button) {
+          const el = button.nativeElement;
+          this.navIndicatorLeft.set(el.offsetLeft);
+          this.navIndicatorWidth.set(el.offsetWidth);
+        }
+      }
     }
   }
 
@@ -506,6 +432,9 @@ export class HeaderComponent implements OnDestroy, AfterViewInit {
 
   setActivePill(pill: string): void {
     this.state.activePill.set(pill);
+    const providerId = PROVIDER_TO_TMDB_ID[pill] ?? null;
+    this.state.selectedProviderId.set(providerId);
+    this.state.selectedWatchRegion.set('IN');
   }
 
   toggleSearch(event?: Event): void {

@@ -63,6 +63,25 @@ export class ContentService {
   private contentPath = '/content';
   private discoverPath = '/discover';
 
+  private buildProviderQuery(
+    page: number,
+    providerId?: number | null,
+    watchRegion = 'IN',
+    extraParams: Record<string, string> = {},
+  ): string {
+    const params = new URLSearchParams({
+      page: String(page),
+      watch_region: watchRegion,
+      ...extraParams,
+    });
+
+    if (providerId !== null && providerId !== undefined) {
+      params.set('providerId', String(providerId));
+    }
+
+    return params.toString();
+  }
+
   getTrending(
     type: 'movie' | 'tv' | 'all' = 'all',
     time: 'day' | 'week' = 'week',
@@ -109,8 +128,14 @@ export class ContentService {
       );
   }
 
-  getMoviesPage(page = 1): Observable<PagedContentResponse> {
-    return this.api.get<PagedContentResponse>(`${this.contentPath}/movies?page=${page}`).pipe(
+  getMoviesPage(
+    page = 1,
+    providerId?: number | null,
+    watchRegion = 'IN',
+  ): Observable<PagedContentResponse> {
+    const query = this.buildProviderQuery(page, providerId, watchRegion);
+
+    return this.api.get<PagedContentResponse>(`${this.contentPath}/movies?${query}`).pipe(
       map((res) => ({
         ...res,
         results: res.results.map((item) => ({
@@ -121,8 +146,14 @@ export class ContentService {
     );
   }
 
-  getTvShowsPage(page = 1): Observable<PagedContentResponse> {
-    return this.api.get<PagedContentResponse>(`${this.contentPath}/tv-shows?page=${page}`).pipe(
+  getTvShowsPage(
+    page = 1,
+    providerId?: number | null,
+    watchRegion = 'IN',
+  ): Observable<PagedContentResponse> {
+    const query = this.buildProviderQuery(page, providerId, watchRegion);
+
+    return this.api.get<PagedContentResponse>(`${this.contentPath}/tv-shows?${query}`).pipe(
       map((res) => ({
         ...res,
         results: res.results.map((item) => ({
@@ -133,17 +164,24 @@ export class ContentService {
     );
   }
 
-  getCatalogPage(type: 'movie' | 'tv', page = 1): Observable<PagedContentResponse> {
+  getCatalogPage(
+    type: 'movie' | 'tv',
+    page = 1,
+    providerId?: number | null,
+    watchRegion = 'IN',
+  ): Observable<PagedContentResponse> {
     if (type === 'movie') {
-      return this.getMoviesPage(page);
+      return this.getMoviesPage(page, providerId, watchRegion);
     }
 
     if (type === 'tv') {
-      return this.getTvShowsPage(page);
+      return this.getTvShowsPage(page, providerId, watchRegion);
     }
 
+    const query = this.buildProviderQuery(page, providerId, watchRegion, { type });
+
     return this.api
-      .get<PagedContentResponse>(`${this.contentPath}/catalog?type=${type}&page=${page}`)
+      .get<PagedContentResponse>(`${this.contentPath}/catalog?${query}`)
       .pipe(
         map((res) => ({
           ...res,

@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { HeroComponent } from './components/hero.component';
 import { ContentGridComponent } from './components/content-grid.component';
 import { ContentService, ContentItem } from './services/content.service';
 import { CommonModule } from '@angular/common';
+import { StateService } from './services/state.service';
 
 @Component({
   selector: 'app-home',
@@ -30,14 +31,49 @@ import { CommonModule } from '@angular/common';
     </div>
   `,
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent {
   private contentService = inject(ContentService);
+  private state = inject(StateService);
+  private requestId = 0;
 
   movies = signal<ContentItem[]>([]);
   shows = signal<ContentItem[]>([]);
 
-  ngOnInit() {
-    this.contentService.getTrending('movie', 'week').subscribe((data) => this.movies.set(data));
-    this.contentService.getTrending('tv', 'week').subscribe((data) => this.shows.set(data));
+  constructor() {
+    effect(() => {
+      const providerId = this.state.selectedProviderId();
+      const watchRegion = this.state.selectedWatchRegion();
+      this.loadHomeRows(providerId, watchRegion);
+    });
+  }
+
+  private loadHomeRows(providerId: number | null, watchRegion: string): void {
+    const currentRequest = ++this.requestId;
+
+    // Reset current lists when provider changes before fetching page 1.
+    this.movies.set([]);
+    this.shows.set([]);
+
+    this.contentService.getMoviesPage(1, providerId, watchRegion).subscribe({
+      next: (response) => {
+        if (currentRequest !== this.requestId) return;
+        this.movies.set(response.results);
+      },
+      error: (error) => {
+        if (currentRequest !== this.requestId) return;
+        console.error('Error loading movie row:', error);
+      },
+    });
+
+    this.contentService.getTvShowsPage(1, providerId, watchRegion).subscribe({
+      next: (response) => {
+        if (currentRequest !== this.requestId) return;
+        this.shows.set(response.results);
+      },
+      error: (error) => {
+        if (currentRequest !== this.requestId) return;
+        console.error('Error loading tv row:', error);
+      },
+    });
   }
 }

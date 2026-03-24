@@ -25,6 +25,8 @@ import {
   Heart,
   CheckCircle,
   Activity,
+  ArrowLeft,
+  Bookmark,
 } from 'lucide-angular';
 
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -67,6 +69,8 @@ export const appConfig: ApplicationConfig = {
         Heart,
         CheckCircle,
         Activity,
+        ArrowLeft,
+        Bookmark,
       }),
     ),
   ],
