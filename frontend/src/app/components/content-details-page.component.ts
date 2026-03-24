@@ -1,15 +1,17 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { LucideAngularModule } from 'lucide-angular';
 import { Subscription, combineLatest, firstValueFrom } from 'rxjs';
+import { map } from 'rxjs/operators';
 import {
   ContentItem,
   ContentService,
   PagedContentResponse,
 } from '../services/content.service';
 import { WatchlistService } from '../services/watchlist.service';
+import { AuthService } from '../services/auth.service';
 import { ShowCardComponent } from './show-card.component';
 
 interface ProviderUi {
@@ -55,12 +57,12 @@ const PROVIDER_UI: Record<string, ProviderUi> = {
         <div class="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 text-center">
           <h1 class="text-2xl font-semibold tracking-tight">Details unavailable</h1>
           <p class="mt-3 text-sm text-black/65">{{ errorMessage() }}</p>
-          <a
-            [routerLink]="['/home']"
-            class="st-pill mt-8 border border-black/15 text-[11px] font-mono uppercase tracking-widest text-black/80 transition-colors hover:bg-black/5"
+          <button
+            (click)="goBack()"
+            class="st-pill mt-8 border border-black/15 text-[11px] font-mono uppercase tracking-widest text-black/80 transition-colors hover:bg-black/5 cursor-pointer"
           >
-            Back to Home
-          </a>
+            Go Back
+          </button>
         </div>
       } @else if (content(); as detail) {
         <section class="relative overflow-hidden border-b border-black/10">
@@ -73,13 +75,13 @@ const PROVIDER_UI: Record<string, ProviderUi> = {
           <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.55),transparent_45%)]"></div>
 
           <div class="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-            <a
-              [routerLink]="['/home']"
-              class="st-pill mb-8 inline-flex items-center gap-2 border border-black/15 text-[11px] font-mono uppercase tracking-widest text-black/85 no-underline transition-colors hover:bg-black/5"
+            <button
+              (click)="goBack()"
+              class="st-pill mb-8 inline-flex items-center gap-2 border border-black/15 text-[11px] font-mono uppercase tracking-widest text-black/85 transition-colors hover:bg-black/5 cursor-pointer"
             >
               <lucide-icon name="arrow-left" class="h-4 w-4"></lucide-icon>
               Back
-            </a>
+            </button>
 
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-12">
               <div>
@@ -127,27 +129,53 @@ const PROVIDER_UI: Record<string, ProviderUi> = {
                 </div>
 
                 <div class="mt-8 flex flex-wrap items-center gap-3">
-                  <button
-                    (click)="addToWatchlist()"
-                    [disabled]="isAddingToWatchlist() || isInWatchlist()"
-                    class="st-pill inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest transition-all duration-200 disabled:cursor-not-allowed"
-                    [ngClass]="
-                      isInWatchlist()
-                        ? 'bg-black text-white'
-                        : 'bg-black text-white hover:bg-black/80'
-                    "
-                  >
-                    @if (isAddingToWatchlist()) {
-                      <div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                      Adding...
-                    } @else if (isInWatchlist()) {
-                      <lucide-icon name="check" class="h-4 w-4"></lucide-icon>
-                      Added
+                  @if (watchlistStatus()) {
+                    @if (watchlistStatus() !== 'watched') {
+                      <button
+                        (click)="updateWatchlistStatus('watched')"
+                        class="st-pill inline-flex items-center gap-2 bg-black text-white text-xs font-mono uppercase tracking-widest transition-all duration-200 hover:bg-black/80"
+                      >
+                        <lucide-icon name="check" class="h-4 w-4"></lucide-icon>
+                        Mark Watched
+                      </button>
                     } @else {
-                      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
-                      Add to Watchlist
+                      <span
+                        class="st-pill inline-flex items-center gap-2 bg-black text-white text-xs font-mono uppercase tracking-widest"
+                      >
+                        <lucide-icon name="check" class="h-4 w-4"></lucide-icon>
+                        Watched
+                      </span>
                     }
-                  </button>
+                    <button
+                      (click)="updateWatchlistStatus(watchlistStatus() === 'watching' ? 'want' : 'watching')"
+                      class="st-pill inline-flex items-center gap-2 border border-black/15 bg-white text-xs font-mono uppercase tracking-widest text-black/85 transition-colors hover:bg-black/5"
+                    >
+                      <lucide-icon [name]="watchlistStatus() === 'watching' ? 'bookmark' : 'play'" class="h-4 w-4"></lucide-icon>
+                      {{ watchlistStatus() === 'watching' ? 'Move to Wishlist' : 'Start Watching' }}
+                    </button>
+                  } @else {
+                    <button
+                      (click)="addToWatchlist()"
+                      [disabled]="isAddingToWatchlist() || isInWatchlist()"
+                      class="st-pill inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest transition-all duration-200 disabled:cursor-not-allowed"
+                      [ngClass]="
+                        isInWatchlist()
+                          ? 'bg-black text-white'
+                          : 'bg-black text-white hover:bg-black/80'
+                      "
+                    >
+                      @if (isAddingToWatchlist()) {
+                        <div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Adding...
+                      } @else if (isInWatchlist()) {
+                        <lucide-icon name="check" class="h-4 w-4"></lucide-icon>
+                        Added
+                      } @else {
+                        <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+                        Add to Watchlist
+                      }
+                    </button>
+                  }
 
                   <a
                     [routerLink]="['/watchlist']"
@@ -260,13 +288,19 @@ const PROVIDER_UI: Record<string, ProviderUi> = {
 export class ContentDetailsPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
   private contentService = inject(ContentService);
+  private authService = inject(AuthService);
   private sanitizer = inject(DomSanitizer);
   watchlistService = inject(WatchlistService);
 
   private routeSub?: Subscription;
   private requestId = 0;
   private similarCache = new Map<string, PagedContentResponse>();
+
+  goBack(): void {
+    this.location.back();
+  }
 
   currentType = signal<'movie' | 'tv'>('movie');
   currentId = signal<number | null>(null);
@@ -276,6 +310,7 @@ export class ContentDetailsPageComponent implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
   isAddingToWatchlist = signal(false);
   isInWatchlist = signal(false);
+  watchlistStatus = signal<'want' | 'watching' | 'watched' | null>(null);
 
   releaseYear = signal<string>('');
   providers = signal<ProviderUi[]>([]);
@@ -325,6 +360,11 @@ export class ContentDetailsPageComponent implements OnInit, OnDestroy {
   }
 
   addToWatchlist(): void {
+    if (!this.authService.isAuthenticated()) {
+      void this.router.navigate(['/login']);
+      return;
+    }
+
     const detail = this.content();
     if (!detail || this.isAddingToWatchlist() || this.isInWatchlist()) return;
 
@@ -344,6 +384,7 @@ export class ContentDetailsPageComponent implements OnInit, OnDestroy {
         next: () => {
           this.isAddingToWatchlist.set(false);
           this.isInWatchlist.set(true);
+          this.watchlistStatus.set('want');
         },
         error: (error) => {
           this.isAddingToWatchlist.set(false);
@@ -356,6 +397,19 @@ export class ContentDetailsPageComponent implements OnInit, OnDestroy {
       });
   }
 
+  updateWatchlistStatus(newStatus: 'want' | 'watching' | 'watched'): void {
+    const detail = this.content();
+    if (!detail) return;
+
+    const contentId = this.toContentId(detail);
+    this.watchlistService.updateWatchlistItem(contentId, { status: newStatus }).subscribe({
+      next: () => {
+        this.watchlistStatus.set(newStatus);
+      },
+      error: (err) => console.error('Error updating watchlist status:', err),
+    });
+  }
+
   fallbackCastImage(seed: number): string {
     return `https://picsum.photos/seed/cast-${seed}/300/400`;
   }
@@ -365,6 +419,7 @@ export class ContentDetailsPageComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     this.isInWatchlist.set(false);
+    this.watchlistStatus.set(null);
 
     try {
       const detail =
@@ -382,6 +437,17 @@ export class ContentDetailsPageComponent implements OnInit, OnDestroy {
           ? this.sanitizer.bypassSecurityTrustResourceUrl(detail.trailer.embedUrl)
           : null,
       );
+
+      // Check if this item is in the watchlist and get its status
+      const contentId = this.toContentId(detail);
+      this.watchlistService.getWatchlist().pipe(
+        map((items) => items.find((i) => i.contentId === contentId)),
+      ).subscribe((item) => {
+        if (item) {
+          this.isInWatchlist.set(true);
+          this.watchlistStatus.set(item.status);
+        }
+      });
 
       const initialSimilar = detail.similar;
       if (initialSimilar && initialSimilar.results.length > 0) {

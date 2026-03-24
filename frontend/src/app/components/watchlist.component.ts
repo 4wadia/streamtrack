@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { StateService } from '../services/state.service';
@@ -111,8 +112,8 @@ import { WatchlistService, WatchlistItem } from '../services/watchlist.service';
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
               @for (item of paginatedItems(); track item.contentId) {
                 <div
-                  (click)="setSelectedItem(item)"
-                  (keydown.enter)="setSelectedItem(item)"
+                  (click)="openDetails(item)"
+                  (keydown.enter)="openDetails(item)"
                   tabindex="0"
                   class="group cursor-pointer flex flex-col gap-4 transition-all duration-500"
                 >
@@ -226,162 +227,11 @@ import { WatchlistService, WatchlistItem } from '../services/watchlist.service';
           </div>
         }
       </div>
-
-      @if (selectedItem(); as item) {
-        <div
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-10"
-          (click)="setSelectedItem(null)"
-          (keydown.enter)="setSelectedItem(null)"
-          tabindex="0"
-        >
-          <div
-            class="bg-white border border-black/10 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl relative flex flex-col"
-            (click)="$event.stopPropagation()"
-            (keydown.enter)="$event.stopPropagation()"
-            tabindex="0"
-          >
-            <button
-              (click)="setSelectedItem(null)"
-              class="absolute top-4 right-4 z-10 w-8 h-8 bg-black/40 hover:bg-black/60 border border-black/10 backdrop-blur-md text-black rounded-full flex items-center justify-center transition-colors cursor-pointer"
-            >
-              <lucide-icon name="x" class="w-4 h-4"></lucide-icon>
-            </button>
-
-            <div class="relative h-[250px] md:h-[350px] w-full shrink-0 border-b border-black/10">
-              <img
-                [src]="watchlistService.getImageUrl(item.backdropPath, 'original')"
-                [alt]="item.title"
-                class="w-full h-full object-cover opacity-60"
-                referrerpolicy="no-referrer"
-              />
-              <div class="absolute inset-0 bg-[#fcfcfd]/40"></div>
-
-              <div class="absolute bottom-0 left-0 w-full p-8 flex items-end gap-6">
-                <img
-                  [src]="watchlistService.getImageUrl(item.posterPath)"
-                  [alt]="item.title"
-                  class="w-24 md:w-32 aspect-[2/3] object-cover rounded-lg shadow-xl border border-black/10 hidden md:block"
-                  referrerpolicy="no-referrer"
-                />
-                <div class="flex-1">
-                  <h2 class="text-3xl md:text-4xl font-semibold text-black mb-3 tracking-tight">
-                    {{ item.title }}
-                  </h2>
-                  <div
-                    class="flex flex-wrap items-center gap-4 font-mono text-[11px] text-black/60 uppercase tracking-widest"
-                  >
-                    <span class="flex items-center gap-1.5"
-                      ><lucide-icon name="calendar" class="w-3.5 h-3.5"></lucide-icon>
-                      {{ item.year }}</span
-                    >
-                    <span class="flex items-center gap-1.5"
-                      ><lucide-icon name="clock" class="w-3.5 h-3.5"></lucide-icon>
-                      {{ item.runtime }}</span
-                    >
-                    <span class="flex items-center gap-1.5 text-black">
-                      <lucide-icon name="star" class="w-3.5 h-3.5 fill-current"></lucide-icon>
-                      {{ item.rating }}/5
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-10">
-              <div class="md:col-span-2 space-y-8">
-                <div class="flex gap-3">
-                  @if (item.status !== 'watched') {
-                    <button
-                      (click)="toggleStatus(item.contentId, 'watched')"
-                      class="px-5 py-2.5 bg-black text-white text-[11px] font-medium rounded-md hover:bg-[#e2e2e7] transition-colors border-none cursor-pointer flex items-center gap-2"
-                    >
-                      <lucide-icon name="check" class="w-3.5 h-3.5"></lucide-icon> Mark Watched
-                    </button>
-                  }
-                  @if (item.status === 'watched') {
-                    <div
-                      class="px-5 py-2.5 bg-black/10 text-black text-[11px] font-medium rounded-md border border-black/10 flex items-center gap-2"
-                    >
-                      <lucide-icon name="check" class="w-3.5 h-3.5"></lucide-icon> Watched
-                    </div>
-                  }
-                  <button
-                    class="px-5 py-2.5 bg-black/5 text-black text-[11px] font-medium rounded-md hover:bg-black/10 border border-black/10 transition-colors cursor-pointer flex items-center gap-2"
-                    (click)="
-                      toggleStatus(item.contentId, item.status === 'watching' ? 'want' : 'watching')
-                    "
-                  >
-                    {{ item.status === 'watching' ? 'Move to Wishlist' : 'Start Watching' }}
-                  </button>
-                </div>
-
-                <section>
-                  <h3 class="text-[10px] font-mono text-black/60 mb-3 uppercase tracking-widest">
-                    Synopsis
-                  </h3>
-                  <p class="text-black/80 text-[14px] leading-relaxed">{{ item.description }}</p>
-                </section>
-
-                <section>
-                  <h3 class="text-[10px] font-mono text-black/60 mb-4 uppercase tracking-widest">
-                    Reviews
-                  </h3>
-                  <div class="space-y-3">
-                    @for (review of item.reviews; track review.author) {
-                      <div class="bg-black/5 p-4 rounded-lg border border-black/5">
-                        <p class="text-black/80 text-[13px] italic mb-2">"{{ review.text }}"</p>
-                        <p class="text-[10px] font-mono text-black/60 uppercase tracking-widest">
-                          — {{ review.author }}
-                        </p>
-                      </div>
-                    }
-                  </div>
-                </section>
-              </div>
-
-              <div class="space-y-8">
-                <section>
-                  <h3 class="text-[10px] font-mono text-black/60 mb-3 uppercase tracking-widest">
-                    Where to Watch
-                  </h3>
-                  <div class="flex flex-col gap-2">
-                    @for (platform of item.whereToWatch; track platform) {
-                      <button
-                        class="flex items-center justify-between px-4 py-2.5 bg-black/5 border border-black/5 rounded-md hover:bg-black/10 transition-colors cursor-pointer text-left"
-                      >
-                        <span class="font-medium text-[13px] text-black">{{ platform }}</span>
-                        <lucide-icon name="play" class="w-3.5 h-3.5 text-black/60"></lucide-icon>
-                      </button>
-                    }
-                  </div>
-                </section>
-
-                <section>
-                  <h3 class="text-[10px] font-mono text-black/60 mb-2 uppercase tracking-widest">
-                    Director
-                  </h3>
-                  <p class="text-black text-[13px] font-medium">{{ item.director }}</p>
-                </section>
-
-                <section>
-                  <h3 class="text-[10px] font-mono text-black/60 mb-2 uppercase tracking-widest">
-                    Cast
-                  </h3>
-                  <ul class="space-y-1.5">
-                    @for (actor of item.cast; track actor) {
-                      <li class="text-black/80 text-[13px]">{{ actor }}</li>
-                    }
-                  </ul>
-                </section>
-              </div>
-            </div>
-          </div>
-        </div>
-      }
     </section>
   `,
 })
 export class WatchlistComponent implements OnInit, AfterViewInit {
+  private router = inject(Router);
   state = inject(StateService);
   watchlistService = inject(WatchlistService);
 
@@ -395,7 +245,6 @@ export class WatchlistComponent implements OnInit, AfterViewInit {
 
   activeTab = signal<'want' | 'watching' | 'watched'>('want');
   expandedId = signal<string | null>(null);
-  selectedItem = signal<WatchlistItem | null>(null);
 
   currentPage = signal(1);
   itemsPerPage = 10;
@@ -525,10 +374,6 @@ export class WatchlistComponent implements OnInit, AfterViewInit {
         this.items.update((items) =>
           items.map((i) => (i.contentId === contentId ? updatedItem : i)),
         );
-        const currentItem = this.selectedItem();
-        if (currentItem?.contentId === contentId) {
-          this.selectedItem.set(updatedItem);
-        }
       },
       error: (err) => console.error('Error updating status:', err),
     });
@@ -538,8 +383,12 @@ export class WatchlistComponent implements OnInit, AfterViewInit {
     this.currentPage.set(page);
   }
 
-  setSelectedItem(item: WatchlistItem | null) {
-    this.selectedItem.set(item);
+  openDetails(item: WatchlistItem) {
+    // contentId format is "movie-123" or "tv-456"
+    const parts = item.contentId.split('-');
+    const type = parts[0]; // 'movie' or 'tv'
+    const id = parts.slice(1).join('-'); // handles edge cases
+    void this.router.navigate(['/', type, id]);
   }
 
   private normalizePlatform(value: string): string {
