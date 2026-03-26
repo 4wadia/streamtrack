@@ -19,6 +19,7 @@ export const routes: Routes = [
   { path: 'tv/:id', component: ContentDetailsPageComponent, data: { type: 'tv', animation: 'details' } },
   { path: 'details/:type/:id', component: ContentDetailsPageComponent, data: { animation: 'details' } },
   { path: 'vibes', component: VibesPageComponent },
+  { path: 'search', component: BrowsePageComponent, data: { animation: 'browse' } },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },

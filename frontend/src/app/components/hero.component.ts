@@ -24,14 +24,14 @@ import { OnInit } from '@angular/core';
 
           <h1
             class="mb-7 text-5xl font-extrabold leading-[1.02] tracking-[-1.2px] text-black transition-all duration-500 md:text-[4.8rem]"
-            [ngClass]="{ 'opacity-0 translate-y-4': !pick() }"
-            [innerHTML]="formatTitle(pick()?.title || pick()?.name || 'Loading...')"
+            [ngClass]="{ 'opacity-0 translate-y-4': isLoading() }"
+            [innerHTML]="formatTitle(pick()?.title || pick()?.name || '')"
           >
           </h1>
 
           <div
             class="mb-10 flex flex-wrap items-center gap-2.5 font-mono text-[11px] tracking-widest transition-all delay-100 duration-500"
-            [ngClass]="{ 'opacity-0 translate-y-4': !pick() }"
+            [ngClass]="{ 'opacity-0 translate-y-4': isLoading() }"
           >
             <span class="st-pill-meta">{{ pick()?.type === 'movie' ? 'Movie' : 'TV Series' }}</span>
             <span class="st-pill-meta">{{ (pick()?.release_date || pick()?.first_air_date || '').split('-')[0] }}</span>
@@ -88,6 +88,7 @@ import { OnInit } from '@angular/core';
           <div
             #visual
             class="st-poster-rounded st-poster-elevated relative h-[480px] w-[320px] overflow-hidden border border-black/10 transition-all duration-1000 ease-out"
+            [ngClass]="{ 'animate-pulse bg-black/5': isLoading() }"
           >
             <img
               [src]="watchlistService.getImageUrl(pick()?.poster_path)"
@@ -106,12 +107,14 @@ export class HeroComponent implements OnInit {
   watchlistService = inject(WatchlistService);
 
   pick = signal<ContentItem | null>(null);
+  isLoading = signal(true);
   isAddingToWatchlist = signal(false);
   isPickAdded = signal(false);
   showTickPulse = signal(false);
   @ViewChild('visual') visualRef!: ElementRef<HTMLDivElement>;
 
   ngOnInit() {
+    this.isLoading.set(true);
     this.contentService.getTonightPick().subscribe({
       next: (data) => {
         if (!data.pick) {
@@ -119,6 +122,7 @@ export class HeroComponent implements OnInit {
           return;
         }
         this.pick.set(data.pick);
+        this.isLoading.set(false);
         this.isPickAdded.set(false);
         this.isAddingToWatchlist.set(false);
         this.showTickPulse.set(false);
@@ -136,8 +140,12 @@ export class HeroComponent implements OnInit {
           const randomIndex = Math.floor(Math.random() * Math.min(items.length, 5));
           this.pick.set(items[randomIndex]);
         }
+        this.isLoading.set(false);
       },
-      error: (err) => console.error('Error fetching fallback trending:', err),
+      error: (err) => {
+        console.error('Error fetching fallback trending:', err);
+        this.isLoading.set(false);
+      },
     });
   }
 

@@ -189,7 +189,7 @@ export class WatchlistService {
   }
 
   getImageUrl(path: string | undefined, size: 'w500' | 'original' = 'w500'): string {
-    if (!path) return 'https://picsum.photos/seed/movie/300/450';
+    if (!path) return 'https://placehold.co/600x900/1a1a1a/ffffff?text=StreamTrack';
     if (path.startsWith('http')) return path;
     return `${this.imageBaseUrl}${size}${path}`;
   }

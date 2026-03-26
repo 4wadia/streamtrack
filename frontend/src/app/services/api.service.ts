@@ -41,11 +41,9 @@ export class ApiService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    // Silently handle auth service unavailable (503) - enable guest mode
+    // Log auth service availability warnings but don't swallow the error.
     if (error.status === 503 || error.status === 401) {
-      console.warn('Auth service unavailable, running in guest mode');
-      // Return empty observable to allow app to continue
-      return new Observable<never>(() => {});
+      console.warn('Auth service unavailable or unauthenticated, running in guest mode or redirecting');
     }
     
     let errorMessage = 'An unknown error occurred!';
